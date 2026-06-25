@@ -1,6 +1,6 @@
 ---
 name: career-vault-resume
-description: Build and maintain a local career memory vault from resumes, CVs, career histories, notes, links, files, GitHub/project material, agent sessions, and job descriptions. Use automatically when Codex discusses resumes, professional background, career events, project history, portfolio material, job applications, JD matching, resume generation, interview stories, or agent-readable user identity.
+description: Use when the user wants to create, update, or use a local career vault for resumes, CVs, project history, job applications, JD matching, interview stories, portfolio material, career events, or agent-readable professional identity.
 ---
 
 # Career Vault Resume
@@ -14,6 +14,13 @@ Trigger this skill implicitly for resume, CV, career profile, project history,
 job application, portfolio, interview preparation, or JD matching work. The user
 does not need to name the skill.
 
+This is a skill-guided workflow with a small deterministic CLI. The agent is
+responsible for reading messy sources, extracting facts, asking review
+questions, and deciding what is safe to use. The CLI is responsible for local
+file operations such as initializing a vault, storing sources, adding events,
+listing events, and generating basic exports. It does not currently perform
+fully automatic resume parsing, claim validation, or PDF resume rendering.
+
 ## Core Rules
 
 - Treat the vault as the user's professional source of truth.
@@ -21,9 +28,14 @@ does not need to name the skill.
 - Preserve raw source material before extracting events.
 - Write AI output as draft events, draft claims, or patch previews unless the
   user explicitly confirms the information.
-- Prefer confirmed claims when generating resumes or agent identity summaries.
+- Prefer confirmed event claims when generating resumes or agent identity
+  summaries.
 - Mark uncertain fields as `needs_review` instead of forcing a value.
 - Keep facts language-neutral; localize only generated resume text.
+- Store resume header information such as name, email, phone, and current
+  location in `profile.yaml`, not as timeline events.
+- Do not include age by default. Ask before storing or showing age-related
+  information.
 
 ## Vault Location
 
@@ -40,12 +52,16 @@ repo unless the user explicitly wants the career memory versioned there.
 
 1. Initialize or locate the vault.
 2. Save user-provided material as a source.
-3. Extract detailed career events from the source.
-4. Add events with `status: draft` or `status: confirmed` depending on user
-   confirmation.
-5. Extract or update claims for each event.
-6. Build `exports/agent_identity.md` when an agent needs user background.
-7. Build `exports/resume_context.md` when a user provides a target JD.
+3. Extract detailed career events from the source using agent judgment.
+4. Present extracted events for user review before storing when practical.
+5. Import reviewed draft events in bulk, or add a single event directly.
+6. Add concise event-level claims when the source supports them.
+7. Build `exports/agent_identity.md` when an agent needs user background.
+8. Build `exports/resume_context.md` when a user provides a target JD.
+
+Do not imply that this skill can already produce a final resume PDF. The current
+resume output is `exports/resume_context.md`, which is source material for a
+later resume drafting or rendering step.
 
 ## Agent-Guided Use
 
@@ -54,6 +70,19 @@ the smallest useful next input: an old resume, a project link, a rough story, a
 JD, or confirmation of uncertain fields. After extracting events, show a concise
 review list and ask the user what should be confirmed, edited, merged, hidden,
 or left as `needs_review`.
+
+For multi-event extraction, create a JSON draft shaped like
+`examples/draft_events.json`. Use `status: draft` unless the user explicitly
+confirms the event. After the user reviews the list, import the draft with
+`import-events`. This keeps semantic extraction in the agent while making local
+storage deterministic.
+
+When the user asks for a resume, check whether `profile.yaml` has
+`display_name`, `email`, `phone`, and `location`. If any are missing, ask for
+only the missing fields before drafting the resume. If these values appear in a
+source, treat them as suggestions and ask before writing them to the profile.
+Age is optional and should remain excluded unless the user explicitly requests
+it or the target resume context requires it.
 
 ## Session Capture
 
@@ -85,8 +114,11 @@ Use these primary objects:
   resume PDFs, job descriptions, and notes.
 - `CareerEvent`: timeline unit such as work, internship, project, education,
   award, publication, certification, scholarship, startup, milestone, or custom.
-- `Claim`: resume-safe fact derived from one event.
-- `Evidence`: source reference that supports a claim.
+- `Claim`: resume-safe fact derived from one event. In the current CLI, claims
+  are stored as strings inside each event.
+- `Evidence`: source reference that supports a claim. In the current CLI,
+  evidence is represented by event `sources`; standalone evidence records are a
+  planned extension.
 - `ResumeContext`: selected events and claims for a target job description.
 
 Events should be flexible. Do not force work -> project -> achievement nesting.
@@ -135,17 +167,23 @@ status: draft
 Use `scripts/career_vault.py` for deterministic file operations:
 
 ```bash
-python scripts/career_vault.py init --vault ~/.career-vault
-python scripts/career_vault.py add-source --vault ~/.career-vault --type note --title "Career note" --text "..."
-python scripts/career_vault.py add-source --vault ~/.career-vault --type agent_session --title "Built Career Vault Resume skill" --text "..."
-python scripts/career_vault.py add-event --vault ~/.career-vault --title "Built AI Resume Generator" --type project --start 2025-05 --description "..."
-python scripts/career_vault.py list-events --vault ~/.career-vault
-python scripts/career_vault.py build-identity --vault ~/.career-vault
-python scripts/career_vault.py build-resume-context --vault ~/.career-vault --jd path/to/jd.md
+python scripts/career_vault.py --vault ~/.career-vault init
+python scripts/career_vault.py --vault ~/.career-vault add-source --type note --title "Career note" --text "..."
+python scripts/career_vault.py --vault ~/.career-vault add-source --type agent_session --title "Built Career Vault Resume skill" --text "..."
+python scripts/career_vault.py --vault ~/.career-vault add-event --title "Built AI Resume Generator" --type project --start 2025-05 --description "..."
+python scripts/career_vault.py --vault ~/.career-vault import-events --file examples/draft_events.json
+python scripts/career_vault.py --vault ~/.career-vault list-events
+python scripts/career_vault.py --vault ~/.career-vault profile show --json
+python scripts/career_vault.py --vault ~/.career-vault profile update --display-name "Pat Example" --email "pat@example.com" --phone "+1 555 0100" --location "San Francisco, CA"
+python scripts/career_vault.py --vault ~/.career-vault check-readiness --for resume
+python scripts/career_vault.py --vault ~/.career-vault build-identity
+python scripts/career_vault.py --vault ~/.career-vault build-resume-context --jd path/to/jd.md
 ```
 
-The script does not replace agent judgment. Use the script to create, validate,
-list, and export vault files after extracting structured content.
+The script does not replace agent judgment. Use the script to create, list, and
+export vault files after extracting structured content. Schema validation,
+standalone claim storage, source metadata records, and resume PDF rendering are
+not implemented yet.
 
 ## References
 

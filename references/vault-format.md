@@ -25,13 +25,30 @@
 schema_version: 1
 user:
   display_name: ""
+  legal_name: ""
+  preferred_name: ""
   headline: ""
+  email: ""
+  phone: ""
+  location: ""
+  date_of_birth: null
+  age: null
   default_locale: en
   target_roles: []
 privacy:
   default_visibility: private
   public_summary_allowed: false
+resume_defaults:
+  include_phone: true
+  include_email: true
+  include_location: true
+  include_age: false
 ```
+
+Name, email, phone, and current location are resume header fields. Store them in
+`profile.yaml`, not as career events. Age is optional and should not be shown by
+default; prefer `date_of_birth` only when the user explicitly wants age-related
+resume output.
 
 ## Career Event
 

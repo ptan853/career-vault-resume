@@ -43,6 +43,33 @@ Do not create events for vague claims without evidence unless they are marked
 5. Generate draft claims for each event.
 6. Add `needs_review` to missing dates, vague metrics, unclear ownership, or
    unsupported impact.
+7. Present the draft event list to the user for review.
+8. Save reviewed events as JSON and import them with `import-events`.
+
+## Draft Import Format
+
+For multi-event extraction, write a JSON file with an `events` array. See
+`examples/draft_events.json`.
+
+Minimum event object:
+
+```json
+{
+  "title": "Built AI Resume Generator",
+  "type": "project",
+  "time": {
+    "start": "2025-05",
+    "precision": "month"
+  },
+  "description": "Built a template-driven resume generation workflow.",
+  "claims": ["Designed a template-driven resume generation workflow."],
+  "sources": ["sources/src_sample_resume.md"]
+}
+```
+
+The CLI fills missing `id`, `schema_version`, `status`, `visibility`, `end`,
+timestamps, and optional fields. Use explicit `status: confirmed` only when the
+user has confirmed the event.
 
 ## Agent Session Extraction
 

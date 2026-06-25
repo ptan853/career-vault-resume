@@ -69,3 +69,111 @@ def test_agent_session_source_type(tmp_path: Path) -> None:
     source_path = Path(result.stdout.strip())
     assert source_path.exists()
     assert "Source type: agent_session" in source_path.read_text()
+
+
+def test_profile_update_show_and_resume_readiness(tmp_path: Path) -> None:
+    vault = tmp_path / ".career-vault"
+    run_cli(vault, "init")
+
+    missing = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--vault",
+            str(vault),
+            "check-readiness",
+            "--for",
+            "resume",
+        ],
+        text=True,
+        capture_output=True,
+    )
+    assert missing.returncode == 1
+    assert "display_name" in missing.stdout
+    assert "email" in missing.stdout
+    assert "phone" in missing.stdout
+    assert "location" in missing.stdout
+
+    run_cli(
+        vault,
+        "profile",
+        "update",
+        "--display-name",
+        "Pat Example",
+        "--email",
+        "pat@example.com",
+        "--phone",
+        "+1 555 0100",
+        "--location",
+        "San Francisco, CA",
+        "--include-age",
+        "false",
+    )
+
+    shown = run_cli(vault, "profile", "show", "--json")
+    profile = json.loads(shown.stdout)
+    assert profile["user"]["display_name"] == "Pat Example"
+    assert profile["user"]["email"] == "pat@example.com"
+    assert profile["user"]["phone"] == "+1 555 0100"
+    assert profile["user"]["location"] == "San Francisco, CA"
+    assert profile["user"]["target_roles"] == []
+    assert profile["resume_defaults"]["include_age"] is False
+
+    ready = run_cli(vault, "check-readiness", "--for", "resume")
+    assert "Ready for resume generation" in ready.stdout
+
+
+def test_init_profile_contains_resume_header_fields(tmp_path: Path) -> None:
+    vault = tmp_path / ".career-vault"
+    run_cli(vault, "init")
+
+    profile_yaml = (vault / "profile.yaml").read_text()
+    assert "display_name:" in profile_yaml
+    assert "email:" in profile_yaml
+    assert "phone:" in profile_yaml
+    assert "location:" in profile_yaml
+    assert "resume_defaults:" in profile_yaml
+
+
+def test_import_events_from_agent_draft_file(tmp_path: Path) -> None:
+    vault = tmp_path / ".career-vault"
+    draft = tmp_path / "draft_events.json"
+    draft.write_text(
+        json.dumps(
+            {
+                "events": [
+                    {
+                        "title": "Built Resume Parser",
+                        "type": "project",
+                        "time": {"start": "2026-01", "precision": "month"},
+                        "description": "Built a parser for resume source material.",
+                        "claims": ["Built a parser for resume source material."],
+                        "sources": ["sources/src_resume.md"],
+                    },
+                    {
+                        "id": "evt_custom_reviewed_project",
+                        "title": "Reviewed Career Vault Events",
+                        "type": "milestone",
+                        "status": "needs_review",
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    run_cli(vault, "init")
+    result = run_cli(vault, "import-events", "--file", str(draft))
+    assert "Imported 2 events" in result.stdout
+
+    listed = run_cli(vault, "list-events", "--json")
+    events = json.loads(listed.stdout)
+    assert [event["title"] for event in events] == [
+        "Built Resume Parser",
+        "Reviewed Career Vault Events",
+    ]
+    assert events[0]["status"] == "draft"
+    assert events[0]["time"]["end"] is None
+    assert events[0]["visibility"] == "private"
+    assert events[1]["id"] == "evt_custom_reviewed_project"
+    assert (vault / "events" / "evt_custom_reviewed_project.yaml").exists()

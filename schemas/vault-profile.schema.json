@@ -3,15 +3,34 @@
   "$id": "https://career-vault.dev/schemas/vault-profile.schema.json",
   "title": "VaultProfile",
   "type": "object",
-  "required": ["schema_version", "user", "privacy"],
+  "required": ["schema_version", "user", "privacy", "resume_defaults"],
   "properties": {
     "schema_version": { "const": 1 },
     "user": {
       "type": "object",
-      "required": ["display_name", "headline", "default_locale", "target_roles"],
+      "required": [
+        "display_name",
+        "legal_name",
+        "preferred_name",
+        "headline",
+        "email",
+        "phone",
+        "location",
+        "date_of_birth",
+        "age",
+        "default_locale",
+        "target_roles"
+      ],
       "properties": {
         "display_name": { "type": "string" },
+        "legal_name": { "type": "string" },
+        "preferred_name": { "type": "string" },
         "headline": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "date_of_birth": { "type": ["string", "null"] },
+        "age": { "type": ["integer", "null"], "minimum": 0 },
         "default_locale": { "type": "string" },
         "target_roles": { "type": "array", "items": { "type": "string" } }
       },
@@ -26,6 +45,17 @@
           "enum": ["private", "resume", "public"]
         },
         "public_summary_allowed": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "resume_defaults": {
+      "type": "object",
+      "required": ["include_phone", "include_email", "include_location", "include_age"],
+      "properties": {
+        "include_phone": { "type": "boolean" },
+        "include_email": { "type": "boolean" },
+        "include_location": { "type": "boolean" },
+        "include_age": { "type": "boolean" }
       },
       "additionalProperties": false
     }
