@@ -177,3 +177,78 @@ def test_import_events_from_agent_draft_file(tmp_path: Path) -> None:
     assert events[0]["visibility"] == "private"
     assert events[1]["id"] == "evt_custom_reviewed_project"
     assert (vault / "events" / "evt_custom_reviewed_project.yaml").exists()
+
+
+def test_build_identity_includes_profile_background(tmp_path: Path) -> None:
+    vault = tmp_path / ".career-vault"
+    run_cli(vault, "init")
+    run_cli(
+        vault,
+        "profile",
+        "update",
+        "--display-name",
+        "Pat Example",
+        "--headline",
+        "AI engineer building local-first career tools",
+        "--location",
+        "San Francisco, CA",
+        "--target-role",
+        "AI Engineer",
+        "--target-role",
+        "Developer Tools Engineer",
+    )
+    run_cli(
+        vault,
+        "add-event",
+        "--title",
+        "Built Career Vault",
+        "--type",
+        "project",
+        "--status",
+        "confirmed",
+        "--description",
+        "Built a local career memory vault.",
+    )
+
+    run_cli(vault, "build-identity")
+    identity = (vault / "exports" / "agent_identity.md").read_text()
+    assert "## Professional Profile" in identity
+    assert "Pat Example" in identity
+    assert "AI engineer building local-first career tools" in identity
+    assert "AI Engineer" in identity
+    assert "Developer Tools Engineer" in identity
+    assert "Built Career Vault" in identity
+
+
+def test_profile_can_store_optional_photo_path(tmp_path: Path) -> None:
+    vault = tmp_path / ".career-vault"
+    photo = tmp_path / "headshot.jpg"
+    photo.write_bytes(b"fake image bytes")
+
+    run_cli(vault, "init")
+    run_cli(
+        vault,
+        "profile",
+        "update",
+        "--display-name",
+        "Pat Example",
+        "--email",
+        "pat@example.com",
+        "--phone",
+        "+1 555 0100",
+        "--location",
+        "San Francisco, CA",
+        "--photo-path",
+        str(photo),
+    )
+
+    shown = run_cli(vault, "profile", "show", "--json")
+    profile = json.loads(shown.stdout)
+    assert profile["user"]["photo_path"] == str(photo)
+
+    ready = run_cli(vault, "check-readiness", "--for", "resume")
+    assert "Ready for resume generation" in ready.stdout
+
+    run_cli(vault, "build-identity")
+    identity = (vault / "exports" / "agent_identity.md").read_text()
+    assert "Photo available" in identity

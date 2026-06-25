@@ -1,55 +1,82 @@
 # Career Vault Resume
 
-Career Vault Resume is a local-first skill and file format for building a
-portable career memory from resumes, notes, links, project material, and job
-descriptions.
+<p align="center">
+  <em>路漫漫其修远兮，吾将上下而求索。</em><br>
+  <sub>The road ahead is long; I will search high and low.</sub>
+</p>
 
-The goal is not to make users fill out another resume form. The goal is to let
-an agent carefully extract detailed career events from messy material, save them
-in a local vault, and reuse the verified facts for resumes, job applications,
-interviews, portfolios, and agent identity.
+Agents forget you between sessions.
+
+Career Vault Resume gives local coding agents a durable, inspectable memory of
+your professional identity: who you are, what you have built, where each fact
+came from, and how that context should be reused for resumes, interviews,
+portfolios, job applications, and future agent sessions.
+
+It is not a visual resume designer. It is the identity and career-memory layer
+that a resume generator, portfolio builder, or interview-prep agent can trust.
+For polished, editable, design-forward resumes, install a separate resume
+designer skill and use it together with this vault.
+
+## Why This Exists
+
+Most career information is scattered across old resumes, PDFs, notes, project
+repos, links, job descriptions, and chat sessions. A new agent usually sees none
+of it, so it either asks the same questions again or guesses.
+
+This skill keeps the source material local, extracts small reusable career
+events with agent judgment, and exports a compact identity file that future
+agents can read before answering user-specific professional questions.
 
 ## What It Does
 
-- Stores raw sources such as resumes, notes, PDFs, links, GitHub summaries, and
-  job descriptions.
-- Guides an agent to extract small, reusable career events from those sources.
-- Stores event-level resume-safe claims and source references.
-- Exports an agent-readable identity summary.
-- Builds target-job resume context from the local vault.
-- Captures career-relevant agent sessions as draft events with user approval.
-- Keeps data in portable files that can be committed to Git or moved across
-  machines.
+- Stores profile basics such as name, email, phone, location, target roles, and
+  an optional photo path.
+- Preserves raw sources from resumes, notes, files, URLs, GitHub material, job
+  descriptions, and agent sessions.
+- Lets an agent extract career events, claims, and source references into a
+  local vault.
+- Imports multi-event JSON drafts produced by an agent review workflow.
+- Exports `agent_identity.md` so future agents can understand the user's
+  professional background.
+- Builds basic JD-specific `resume_context.md` for downstream resume drafting.
 
-The current CLI does not automatically parse resumes, maintain standalone claim
-or evidence records, or render final resume PDFs. Those steps require agent
-judgment or future commands. Today, the CLI provides deterministic local storage
-and basic Markdown exports.
+Current limits: no automatic PDF parsing, no standalone claim database yet, no
+visual resume templates, and no PDF rendering. Complex, editable, designed
+resumes should be handled by a separate resume-designer skill that consumes this
+vault's exported context.
 
-## Repository Layout
+## How It Works
 
 ```text
-career-vault-resume/
-  SKILL.md
-  README.md
-  scripts/
-    career_vault.py
-  references/
-    vault-format.md
-    extraction-guide.md
-    resume-context.md
-  schemas/
-    career-event.schema.json
-    source-material.schema.json
-    claim.schema.json
-    vault-profile.schema.json
-  assets/
-    templates/
-      markdown/
-        resume_context.md
-  examples/
-    sample_vault/
+resumes / notes / links / sessions / JDs
+        |
+        v
+agent extracts reviewed career events
+        |
+        v
+.career-vault/
+        |
+        +--> exports/agent_identity.md
+        +--> exports/resume_context.md
 ```
+
+The Python CLI performs deterministic file operations. The agent does the
+semantic work: reading messy material, identifying events, marking uncertainty,
+and asking the user what should be confirmed.
+
+## Install
+
+Clone or keep this repository locally, then install it as a Codex-discoverable
+skill:
+
+```bash
+ln -s /Users/pt623/Documents/career-vault-resume \
+  /Users/pt623/.codex/skills/career-vault-resume
+```
+
+The same `SKILL.md` can also be read by Claude Code, Gemini CLI, OpenCode, or
+other local agents that can access files and run shell commands. The CLI uses
+only the Python standard library and requires Python 3.10+.
 
 ## Quick Start
 
@@ -59,90 +86,112 @@ Initialize a vault:
 python scripts/career_vault.py --vault ~/.career-vault init
 ```
 
-Update resume header information:
+Add profile basics:
 
 ```bash
 python scripts/career_vault.py --vault ~/.career-vault profile update \
   --display-name "Pat Example" \
   --email "pat@example.com" \
   --phone "+1 555 0100" \
-  --location "San Francisco, CA"
+  --location "San Francisco, CA" \
+  --target-role "AI Engineer"
 ```
 
-Add a source note:
+Optional profile fields, such as a headshot path, can be added later when a
+template or portfolio output needs them.
+
+Import agent-extracted draft events:
 
 ```bash
-python scripts/career_vault.py --vault ~/.career-vault add-source \
-  --type note \
-  --title "Initial career note" \
-  --text "I built a LaTeX resume generator and explored AI rewriting for job-specific resumes."
+python scripts/career_vault.py --vault ~/.career-vault import-events \
+  --file examples/draft_events.json
 ```
 
-Save a career-relevant agent session summary:
-
-```bash
-python scripts/career_vault.py --vault ~/.career-vault add-source \
-  --type agent_session \
-  --title "Built Career Vault Resume skill" \
-  --text "Designed and implemented a local-first career memory skill with schemas, CLI, examples, and tests."
-```
-
-Add an event:
-
-```bash
-python scripts/career_vault.py --vault ~/.career-vault add-event \
-  --title "Built AI Resume Generator" \
-  --type project \
-  --start 2025-05 \
-  --description "Built a template-driven resume generation workflow with AI-assisted rewriting."
-```
-
-Import multiple agent-extracted draft events:
-
-```bash
-python scripts/career_vault.py --vault ~/.career-vault import-events --file examples/draft_events.json
-```
-
-Check whether required resume header fields are present:
-
-```bash
-python scripts/career_vault.py --vault ~/.career-vault check-readiness --for resume
-```
-
-Build an agent identity summary:
+Export agent-readable identity context:
 
 ```bash
 python scripts/career_vault.py --vault ~/.career-vault build-identity
 ```
 
-Build resume context for a job description:
+The generated identity file lives at:
 
-```bash
-python scripts/career_vault.py --vault ~/.career-vault build-resume-context --jd jd.md
+```text
+~/.career-vault/exports/agent_identity.md
 ```
 
-## Data Storage
+Run `python scripts/career_vault.py --help` for the full CLI. Use
+`build-resume-context --jd jd.md` when a target job description is available.
 
-The default vault is a directory:
+## Vault Files
 
 ```text
 .career-vault/
-  profile.yaml
-  events/
-  claims/
-  sources/
-  resumes/
+  profile.yaml              # identity basics, target roles, optional photo
+  sources/                  # preserved source notes, files, URLs, sessions
+  events/                   # career events as YAML plus JSON sidecars
+  claims/                   # reserved for standalone claim storage
+  resumes/                  # reserved for generated resume artifacts
   exports/
+    agent_identity.md       # compact context for future agents
+    resume_context.md       # JD-specific selected background
 ```
 
-MVP storage uses human-readable files so users can inspect, migrate, and version
-their career memory. A future app can index the same files into SQLite or a
-vector store without changing the source of truth.
+Files are human-readable by design. Users can inspect them, version them, move
+them across machines, or later index the same source of truth into SQLite or a
+vector store.
+
+## Agent Workflow
+
+1. Read `SKILL.md` when a task involves the user's background, experience,
+   professional identity, resume, portfolio, job search, or interview stories.
+2. Save raw material first with `add-source`.
+3. Extract small career events from the material.
+4. Show the draft event list to the user for review.
+5. Import reviewed events with `import-events`.
+6. Run `build-identity` before answering user-specific professional background
+   questions.
+7. Run `build-resume-context` when a target JD is provided.
+
+For multi-event extraction, use the format in:
+
+```text
+examples/draft_events.json
+```
+
+## Project Layout
+
+```text
+career-vault-resume/
+  SKILL.md                         # agent-facing workflow
+  scripts/career_vault.py          # standard-library CLI
+  references/
+    vault-format.md
+    extraction-guide.md
+    resume-context.md
+  schemas/
+    career-event.schema.json
+    source-material.schema.json
+    claim.schema.json
+    vault-profile.schema.json
+  examples/
+    draft_events.json
+    sample_jd.md
+    sample_vault/
+  tests/
+    test_career_vault_cli.py
+```
 
 ## Status
 
-This is an early skill-first MVP. It provides the shared data structure and
-deterministic file operations. AI extraction should be performed by the host
-agent using the instructions in `SKILL.md` and `references/`. The next major
-development steps are schema-backed validation, standalone claim storage,
-stronger source ingestion, resume drafting, and PDF rendering.
+This is an early skill-first MVP. It currently covers local identity storage,
+career event storage, draft event import, agent identity export, and basic
+resume context export.
+
+Planned next steps:
+
+- schema-backed validation
+- standalone claim and evidence storage
+- stronger source ingestion
+- simple black-and-white resume drafting
+- handoff to a separate resume-designer skill for polished editable HTML/PDF
+  resumes

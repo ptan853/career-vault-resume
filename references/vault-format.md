@@ -31,6 +31,7 @@ user:
   email: ""
   phone: ""
   location: ""
+  photo_path: null
   date_of_birth: null
   age: null
   default_locale: en
@@ -49,6 +50,9 @@ Name, email, phone, and current location are resume header fields. Store them in
 `profile.yaml`, not as career events. Age is optional and should not be shown by
 default; prefer `date_of_birth` only when the user explicitly wants age-related
 resume output.
+
+`photo_path` is optional. Use it for templates, regions, or portfolio outputs
+where a headshot is appropriate. Do not require it for resume readiness.
 
 ## Career Event
 

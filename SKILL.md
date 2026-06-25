@@ -1,25 +1,28 @@
 ---
 name: career-vault-resume
-description: Use when the user wants to create, update, or use a local career vault for resumes, CVs, project history, job applications, JD matching, interview stories, portfolio material, career events, or agent-readable professional identity.
+description: Use when the user asks about their professional background, career history, identity, experience, projects, skills, resumes, CVs, job applications, JD matching, interview stories, portfolio material, or agent-readable user context.
 ---
 
 # Career Vault Resume
 
-Use this skill to maintain a local, portable career memory that agents can share.
-The vault stores source material, career events, resume-safe claims, evidence,
-and generated resume context. Prefer updating the vault before drafting resumes
-or professional identity summaries.
+Use this skill to maintain a local, portable professional identity and career
+memory that agents can share across sessions. The vault stores profile details,
+source material, career events, resume-safe claims, evidence, and generated
+agent identity context. Treat simple resume support as one output of the vault,
+not as the whole purpose of the skill.
 
-Trigger this skill implicitly for resume, CV, career profile, project history,
-job application, portfolio, interview preparation, or JD matching work. The user
-does not need to name the skill.
+Trigger this skill implicitly for questions about the user's background,
+experience, career profile, projects, skills, professional identity, resume,
+CV, job application, portfolio, interview preparation, or JD matching work. The
+user does not need to name the skill.
 
 This is a skill-guided workflow with a small deterministic CLI. The agent is
 responsible for reading messy sources, extracting facts, asking review
 questions, and deciding what is safe to use. The CLI is responsible for local
 file operations such as initializing a vault, storing sources, adding events,
-listing events, and generating basic exports. It does not currently perform
-fully automatic resume parsing, claim validation, or PDF resume rendering.
+listing events, and generating basic identity/resume-context exports. It does
+not currently perform fully automatic resume parsing, claim validation, complex
+visual resume design, or PDF resume rendering.
 
 ## Core Rules
 
@@ -34,6 +37,8 @@ fully automatic resume parsing, claim validation, or PDF resume rendering.
 - Keep facts language-neutral; localize only generated resume text.
 - Store resume header information such as name, email, phone, and current
   location in `profile.yaml`, not as timeline events.
+- Store an optional profile photo/headshot path in `profile.yaml` only when the
+  user provides one or a downstream template needs one.
 - Do not include age by default. Ask before storing or showing age-related
   information.
 
@@ -61,7 +66,9 @@ repo unless the user explicitly wants the career memory versioned there.
 
 Do not imply that this skill can already produce a final resume PDF. The current
 resume output is `exports/resume_context.md`, which is source material for a
-later resume drafting or rendering step.
+later resume drafting or rendering step. Complex, highly designed, editable
+resumes should be handled by a separate resume-design skill that consumes this
+vault's exported context.
 
 ## Agent-Guided Use
 
@@ -83,6 +90,16 @@ only the missing fields before drafting the resume. If these values appear in a
 source, treat them as suggestions and ask before writing them to the profile.
 Age is optional and should remain excluded unless the user explicitly requests
 it or the target resume context requires it.
+
+Photo/headshot is optional. If a target resume template, region, or portfolio
+style may benefit from a photo, tell the user they can provide one, but do not
+block resume readiness on it. For conservative or ATS-oriented resumes, default
+to no photo unless the user asks.
+
+When the user asks what the agent knows about them, asks for user-specific
+professional advice, or asks about their background, build or read
+`exports/agent_identity.md` before answering. If the identity export is missing
+or stale, regenerate it with `build-identity`.
 
 ## Session Capture
 
@@ -174,7 +191,7 @@ python scripts/career_vault.py --vault ~/.career-vault add-event --title "Built 
 python scripts/career_vault.py --vault ~/.career-vault import-events --file examples/draft_events.json
 python scripts/career_vault.py --vault ~/.career-vault list-events
 python scripts/career_vault.py --vault ~/.career-vault profile show --json
-python scripts/career_vault.py --vault ~/.career-vault profile update --display-name "Pat Example" --email "pat@example.com" --phone "+1 555 0100" --location "San Francisco, CA"
+python scripts/career_vault.py --vault ~/.career-vault profile update --display-name "Pat Example" --email "pat@example.com" --phone "+1 555 0100" --location "San Francisco, CA" --photo-path path/to/headshot.jpg
 python scripts/career_vault.py --vault ~/.career-vault check-readiness --for resume
 python scripts/career_vault.py --vault ~/.career-vault build-identity
 python scripts/career_vault.py --vault ~/.career-vault build-resume-context --jd path/to/jd.md

@@ -53,6 +53,7 @@ def default_profile() -> dict[str, Any]:
             "email": "",
             "phone": "",
             "location": "",
+            "photo_path": None,
             "date_of_birth": None,
             "age": None,
             "default_locale": "en",
@@ -128,11 +129,19 @@ def read_profile(vault: Path) -> dict[str, Any]:
 
     parsed: dict[str, Any] = {}
     section: str | None = None
+    list_target: tuple[str, str] | None = None
     for line in path.read_text(encoding="utf-8").splitlines():
         if not line.strip() or line.lstrip().startswith("#"):
             continue
+        if list_target and line.startswith("    - "):
+            target_section, target_key = list_target
+            parsed.setdefault(target_section, {}).setdefault(target_key, []).append(
+                parse_yaml_scalar(line.strip()[2:])
+            )
+            continue
         if not line.startswith(" ") and line.endswith(":"):
             section = line[:-1]
+            list_target = None
             parsed.setdefault(section, {})
             continue
         if ":" not in line:
@@ -142,11 +151,13 @@ def read_profile(vault: Path) -> dict[str, Any]:
         value = [] if key == "target_roles" and not raw.strip() else parse_yaml_scalar(raw)
         if key == "target_roles" and not isinstance(value, list):
             value = []
+        list_target = (section, key) if section and key == "target_roles" and isinstance(value, list) else None
         if line.startswith("  ") and section:
             parsed.setdefault(section, {})[key] = value
         else:
             parsed[key] = value
             section = None
+            list_target = None
     return merge_missing(profile, parsed)
 
 
@@ -418,6 +429,8 @@ def load_events(vault: Path) -> list[dict[str, Any]]:
 def command_build_identity(args: argparse.Namespace) -> None:
     vault = vault_path(args)
     ensure_vault(vault)
+    profile = read_profile(vault)
+    user = profile.get("user", {})
     events = load_events(vault)
     confirmed = [event for event in events if event.get("status") == "confirmed"]
     draft = [event for event in events if event.get("status") != "confirmed"]
@@ -426,9 +439,29 @@ def command_build_identity(args: argparse.Namespace) -> None:
         "",
         "This file is generated from the local career vault. Treat it as context, not as permission to invent facts.",
         "",
-        "## Confirmed Career Events",
+        "## Professional Profile",
         "",
     ]
+    profile_lines = []
+    if user.get("display_name"):
+        profile_lines.append(f"- Name: {user['display_name']}")
+    if user.get("preferred_name"):
+        profile_lines.append(f"- Preferred name: {user['preferred_name']}")
+    if user.get("headline"):
+        profile_lines.append(f"- Headline: {user['headline']}")
+    if user.get("location"):
+        profile_lines.append(f"- Location: {user['location']}")
+    if user.get("photo_path"):
+        profile_lines.append("- Photo available: yes")
+    target_roles = user.get("target_roles") or []
+    if target_roles:
+        profile_lines.append(f"- Target roles: {', '.join(target_roles)}")
+    lines.extend(profile_lines or ["No profile summary has been confirmed yet."])
+    lines.extend([
+        "",
+        "## Confirmed Career Events",
+        "",
+    ])
     for event in confirmed:
         lines.extend(format_event_markdown(event))
     if not confirmed:
@@ -561,6 +594,7 @@ def command_profile_update(args: argparse.Namespace) -> None:
         "email": args.email,
         "phone": args.phone,
         "location": args.location,
+        "photo_path": args.photo_path,
         "date_of_birth": args.date_of_birth,
         "age": args.age,
         "default_locale": args.default_locale,
@@ -568,6 +602,8 @@ def command_profile_update(args: argparse.Namespace) -> None:
     for key, value in user_updates.items():
         if value is not None:
             profile["user"][key] = value
+    if args.target_role is not None:
+        profile["user"]["target_roles"] = args.target_role
     if args.include_age is not None:
         profile["resume_defaults"]["include_age"] = args.include_age
     write_profile(vault, profile)
@@ -660,9 +696,11 @@ def build_parser() -> argparse.ArgumentParser:
     profile_update.add_argument("--email")
     profile_update.add_argument("--phone")
     profile_update.add_argument("--location")
+    profile_update.add_argument("--photo-path")
     profile_update.add_argument("--date-of-birth")
     profile_update.add_argument("--age", type=int)
     profile_update.add_argument("--default-locale")
+    profile_update.add_argument("--target-role", action="append")
     profile_update.add_argument("--include-age", type=parse_bool_arg)
     profile_update.set_defaults(func=command_profile_update)
 

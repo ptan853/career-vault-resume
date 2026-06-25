@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository defines a local-first career vault skill and CLI. Core behavior lives in `scripts/career_vault.py`, a standard-library Python command-line tool. Skill instructions are in `SKILL.md`; supporting documentation is in `references/`. JSON schemas for vault files live in `schemas/`. Markdown templates are under `assets/templates/markdown/`. Sample data and job-description inputs are in `examples/`, including `examples/sample_vault/`. Tests live in `tests/` and currently exercise the CLI end to end.
+This repository defines a local-first professional identity and career vault skill with a supporting CLI. Core behavior lives in `scripts/career_vault.py`, a standard-library Python command-line tool. Skill instructions are in `SKILL.md`; supporting documentation is in `references/`. JSON schemas for vault files live in `schemas/`. Markdown templates are under `assets/templates/markdown/`. Sample data and job-description inputs are in `examples/`, including `examples/sample_vault/`. Tests live in `tests/` and exercise the CLI end to end.
 
 ## Build, Test, and Development Commands
 
