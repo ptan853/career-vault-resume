@@ -1,7 +1,0 @@
-interface:
-  display_name: "Career Timeline"
-  short_description: "Local professional timeline and identity memory"
-  default_prompt: "Use $career-timeline to build or update my local professional timeline from resumes, notes, links, and job descriptions."
-
-policy:
-  allow_implicit_invocation: true

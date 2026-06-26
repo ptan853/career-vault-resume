@@ -40,13 +40,13 @@ identity file that future agents can read.
 - Imports multi-event JSON drafts produced by an agent review workflow.
 - Exports `agent_identity.md` so future agents can understand the user's
   professional background.
-- Optionally exports legacy handoff context for downstream resume or interview
-  tools.
+- Checks profile readiness before handing verified timeline facts to downstream
+  resume or interview tools.
 
 Current limits: no automatic PDF parsing, no standalone claim database yet, no
-visual resume templates, no automatic photo processing, and no PDF rendering.
-Final resume strategy, wording, layout, editable HTML/DOCX, and PDF export
-belong in a separate resume-designer skill.
+visual resume templates, and no PDF rendering. Final resume strategy, wording,
+layout, editable HTML/DOCX, and PDF export belong in a separate resume-designer
+skill.
 
 ## How It Works
 
@@ -60,7 +60,6 @@ agent extracts reviewed career events
 .career-vault/
         |
         +--> exports/agent_identity.md
-        +--> exports/resume_context.md  # optional downstream handoff
 ```
 
 The Python CLI performs deterministic file operations. The agent does the
@@ -122,10 +121,7 @@ The generated identity file lives at:
 ~/.career-vault/exports/agent_identity.md
 ```
 
-Run `python scripts/career_timeline.py --help` for the full CLI. The legacy
-`build-resume-context` and `build-basic-resume` commands remain available for
-compatibility and diagnostics, but they are not the recommended final resume
-path.
+Run `python scripts/career_timeline.py --help` for the full CLI.
 
 ## Vault Files
 
@@ -135,13 +131,8 @@ path.
   sources/                  # preserved source notes, files, URLs, sessions
   events/                   # career events as YAML plus JSON sidecars
   claims/                   # reserved for standalone claim storage
-  resumes/                  # reserved for downstream generated artifacts
   exports/
     agent_identity.md       # compact context for future agents
-    resume_context.md       # optional downstream handoff context
-    basic_resume.json       # legacy diagnostic export
-    basic_resume.md         # legacy diagnostic export
-    basic_resume.html       # legacy diagnostic export
 ```
 
 Files are human-readable by design. Users can inspect them, version them, move
@@ -185,7 +176,6 @@ career-timeline/
   references/
     vault-format.md
     extraction-guide.md
-    resume-context.md              # legacy/downstream handoff notes
   schemas/
     career-event.schema.json
     source-material.schema.json
@@ -193,8 +183,6 @@ career-timeline/
     vault-profile.schema.json
   examples/
     draft_events.json
-    sample_jd.md
-    sample_vault/
   tests/
     test_career_timeline_cli.py
 ```
@@ -202,8 +190,8 @@ career-timeline/
 ## Status
 
 This is an early skill-first MVP. It currently covers local identity storage,
-career event storage, draft event import, agent identity export, and legacy
-handoff exports.
+career event storage, draft event import, agent identity export, and readiness
+checks for downstream tools.
 
 Planned next steps:
 

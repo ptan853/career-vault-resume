@@ -131,7 +131,7 @@ Expected behavior:
   event facts.
 - If the timeline is ready, it produces handoff guidance or context for a
   downstream resume-designer workflow.
-- It does not present `build-basic-resume` output as a final application resume.
+- It does not generate or present a final application resume.
 
 Fail if:
 

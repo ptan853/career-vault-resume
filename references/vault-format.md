@@ -11,10 +11,8 @@
     claims.jsonl
   sources/
     src_*.md
-  resumes/
   exports/
     agent_identity.md
-    resume_context.md
 ```
 
 ## Profile
