@@ -162,7 +162,8 @@ vector store.
    professional identity, resume, portfolio, job search, or interview stories.
 2. Save raw material first with `add-source`.
 3. Extract small career events from the material.
-4. Show the draft event list to the user for review.
+4. Show one review card per draft event, with evidence and confirmation
+   choices. Do not replace a batch with a summary.
 5. Import reviewed events with `import-events`.
 6. Run `build-identity` before answering user-specific professional background
    questions.

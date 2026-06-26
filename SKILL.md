@@ -58,7 +58,7 @@ repo unless the user explicitly wants the career memory versioned there.
 1. Initialize or locate the vault.
 2. Save user-provided material as a source.
 3. Extract detailed career events from the source using agent judgment.
-4. Present extracted events for user review before storing when practical.
+4. Present one review card per extracted event before storing it.
 5. Import reviewed draft events in bulk, or add a single event directly.
 6. Add concise event-level claims when the source supports them.
 7. Build `exports/agent_identity.md` when an agent needs user background.
@@ -75,9 +75,26 @@ separate resume-design skill that consumes this vault's exported context.
 
 Guide the user through the process instead of asking them to edit YAML. Ask for
 the smallest useful next input: an old resume, a project link, a rough story, a
-JD, or confirmation of uncertain fields. After extracting events, show a concise
-review list and ask the user what should be confirmed, edited, merged, hidden,
-or left as `needs_review`.
+JD, or confirmation of uncertain fields.
+
+After extracting events, show visible draft information and confirmation choices
+before writing to the timeline. The default review format is one event card per
+event. Do not replace multiple extracted events with a one-paragraph summary.
+Do not generate a review Markdown file for routine review; use inline event
+cards unless the user asks for a file or the batch is too large for chat.
+
+Each event card should include the event title, type, time span, role,
+organization, location, status, visibility, evidence/source, uncertain fields,
+details, claims, and clear user choices:
+
+```text
+Confirm this event / edit fields / mark needs_review / skip this event
+```
+
+For 1-5 events, show full cards inline. For 6-12 events, show compact cards
+inline, still one card per event. For 13 or more events, show a batch overview
+and the first 10 cards, then ask whether to continue with the next batch or
+create an external review artifact.
 
 For multi-event extraction, create a JSON draft shaped like
 `examples/draft_events.json`. Use `status: draft` unless the user explicitly

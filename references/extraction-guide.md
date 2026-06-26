@@ -43,8 +43,53 @@ Do not create events for vague claims without evidence unless they are marked
 5. Generate draft claims for each event.
 6. Add `needs_review` to missing dates, vague metrics, unclear ownership, or
    unsupported impact.
-7. Present the draft event list to the user for review.
+7. Present one draft event card per event to the user for review.
 8. Save reviewed events as JSON and import them with `import-events`.
+
+## Event Review Cards
+
+Before writing extracted events to the timeline, show each event as a review
+card. The user should be able to confirm, correct, or reject events without
+reading JSON or Markdown files.
+
+Use this card shape by default:
+
+```md
+### Event 1: <title>
+
+| Field | Draft |
+|---|---|
+| Type | <work/project/education/etc.> |
+| Time | <start - end, or unknown> |
+| Role | <role or unknown> |
+| Organization | <organization or none> |
+| Location | <location or unknown> |
+| Status | draft / needs_review |
+| Visibility | private / resume / public |
+| Evidence | <source title/path/link> |
+| Needs Review | <uncertain dates, metrics, ownership, visibility, etc.> |
+
+**Details**
+- <short factual detail>
+- <short factual detail>
+
+**Claims**
+- <resume-safe claim>
+- <resume-safe claim>
+
+**Choices**
+Confirm this event / edit fields / mark needs_review / skip this event
+```
+
+Do not summarize several extracted events as "I found 10 events" without
+showing the cards. For 1-5 events, show full cards inline. For 6-12 events,
+show compact cards inline with one card per event. For 13 or more events, show
+a batch overview and the first 10 cards, then ask whether to continue with the
+next batch or create an external review artifact.
+
+Only create a review Markdown or HTML file when the user asks for one, the
+batch is too large for chat, or the review needs to be shared outside the
+session. Routine reviews should stay in the conversation.
 
 ## Draft Import Format
 
