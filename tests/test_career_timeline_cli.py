@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "career_vault.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "career_timeline.py"
 
 
 def run_cli(vault: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -61,7 +61,7 @@ def test_agent_session_source_type(tmp_path: Path) -> None:
         "--type",
         "agent_session",
         "--title",
-        "Built Career Vault Resume skill",
+        "Built Career Timeline skill",
         "--text",
         "Implemented a local-first career memory skill.",
     )

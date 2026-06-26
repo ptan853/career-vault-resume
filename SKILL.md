@@ -11,10 +11,6 @@ source material, career events, resume-safe claims, evidence, and generated
 agent identity context. Resume support is a downstream fallback/export path, not
 the core purpose of the skill.
 
-Older installs may still live in a `career-vault-resume` directory for
-compatibility. Treat `career-timeline` as the skill's current name and user
-facing purpose.
-
 Trigger this skill implicitly for questions about the user's background,
 experience, career profile, projects, skills, professional identity, resume,
 CV, job application, portfolio, interview preparation, or JD matching work. The
@@ -220,21 +216,21 @@ status: draft
 
 ## Scripts
 
-Use `scripts/career_vault.py` for deterministic file operations:
+Use `scripts/career_timeline.py` for deterministic file operations:
 
 ```bash
-python scripts/career_vault.py --vault ~/.career-vault init
-python scripts/career_vault.py --vault ~/.career-vault add-source --type note --title "Career note" --text "..."
-python scripts/career_vault.py --vault ~/.career-vault add-source --type agent_session --title "Built Career Timeline skill" --text "..."
-python scripts/career_vault.py --vault ~/.career-vault add-event --title "Built AI Resume Generator" --type project --start 2025-05 --description "..."
-python scripts/career_vault.py --vault ~/.career-vault import-events --file examples/draft_events.json
-python scripts/career_vault.py --vault ~/.career-vault list-events
-python scripts/career_vault.py --vault ~/.career-vault profile show --json
-python scripts/career_vault.py --vault ~/.career-vault profile update --display-name "Pat Example" --email "pat@example.com" --phone "+1 555 0100" --location "San Francisco, CA" --photo-path path/to/headshot.jpg
-python scripts/career_vault.py --vault ~/.career-vault check-readiness --for resume
-python scripts/career_vault.py --vault ~/.career-vault build-identity
-python scripts/career_vault.py --vault ~/.career-vault build-resume-context --jd path/to/jd.md
-python scripts/career_vault.py --vault ~/.career-vault build-basic-resume --language zh --pages 1 --include-photo
+python scripts/career_timeline.py --vault ~/.career-vault init
+python scripts/career_timeline.py --vault ~/.career-vault add-source --type note --title "Career note" --text "..."
+python scripts/career_timeline.py --vault ~/.career-vault add-source --type agent_session --title "Built Career Timeline skill" --text "..."
+python scripts/career_timeline.py --vault ~/.career-vault add-event --title "Built AI Resume Generator" --type project --start 2025-05 --description "..."
+python scripts/career_timeline.py --vault ~/.career-vault import-events --file examples/draft_events.json
+python scripts/career_timeline.py --vault ~/.career-vault list-events
+python scripts/career_timeline.py --vault ~/.career-vault profile show --json
+python scripts/career_timeline.py --vault ~/.career-vault profile update --display-name "Pat Example" --email "pat@example.com" --phone "+1 555 0100" --location "San Francisco, CA" --photo-path path/to/headshot.jpg
+python scripts/career_timeline.py --vault ~/.career-vault check-readiness --for resume
+python scripts/career_timeline.py --vault ~/.career-vault build-identity
+python scripts/career_timeline.py --vault ~/.career-vault build-resume-context --jd path/to/jd.md
+python scripts/career_timeline.py --vault ~/.career-vault build-basic-resume --language zh --pages 1 --include-photo
 ```
 
 The script does not replace agent judgment. Use the script to create, list, and

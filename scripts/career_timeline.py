@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small file-based CLI for Career Vault Resume.
+"""Small file-based CLI for Career Timeline.
 
 The script intentionally uses only the Python standard library so it can run in
 most agent environments without installing dependencies.
@@ -896,7 +896,7 @@ def command_check_readiness(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Career Vault Resume file CLI")
+    parser = argparse.ArgumentParser(description="Career Timeline file CLI")
     parser.add_argument("--vault", help="Path to .career-vault directory")
     sub = parser.add_subparsers(dest="command", required=True)
 

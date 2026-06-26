@@ -1,7 +1,7 @@
 [project]
-name = "career-vault-resume"
+name = "career-timeline"
 version = "0.1.0"
-description = "Local-first professional identity and career memory vault skill."
+description = "Local-first professional timeline and identity memory skill."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
