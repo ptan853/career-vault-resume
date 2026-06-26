@@ -168,6 +168,14 @@ For multi-event extraction, use the format in:
 examples/draft_events.json
 ```
 
+## Skill Verification
+
+Use `evals/manual-skill-evals.md` before merging changes to `SKILL.md`,
+workflow references, or agent-facing examples. The evals check whether an agent
+actually follows the timeline boundary: preserve source material, extract draft
+events, show review cards, wait for confirmation, then build identity or
+downstream handoff context.
+
 ## Project Layout
 
 ```text
