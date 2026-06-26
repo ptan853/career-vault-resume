@@ -1,15 +1,19 @@
 ---
-name: career-vault-resume
+name: career-timeline
 description: Use when the user asks about their professional background, career history, identity, experience, projects, skills, resumes, CVs, job applications, JD matching, interview stories, portfolio material, or agent-readable user context.
 ---
 
-# Career Vault Resume
+# Career Timeline
 
-Use this skill to maintain a local, portable professional identity and career
+Use this skill to maintain a local, portable professional timeline and identity
 memory that agents can share across sessions. The vault stores profile details,
 source material, career events, resume-safe claims, evidence, and generated
-agent identity context. Treat simple resume support as one output of the vault,
-not as the whole purpose of the skill.
+agent identity context. Resume support is a downstream fallback/export path, not
+the core purpose of the skill.
+
+Older installs may still live in a `career-vault-resume` directory for
+compatibility. Treat `career-timeline` as the skill's current name and user
+facing purpose.
 
 Trigger this skill implicitly for questions about the user's background,
 experience, career profile, projects, skills, professional identity, resume,
@@ -221,7 +225,7 @@ Use `scripts/career_vault.py` for deterministic file operations:
 ```bash
 python scripts/career_vault.py --vault ~/.career-vault init
 python scripts/career_vault.py --vault ~/.career-vault add-source --type note --title "Career note" --text "..."
-python scripts/career_vault.py --vault ~/.career-vault add-source --type agent_session --title "Built Career Vault Resume skill" --text "..."
+python scripts/career_vault.py --vault ~/.career-vault add-source --type agent_session --title "Built Career Timeline skill" --text "..."
 python scripts/career_vault.py --vault ~/.career-vault add-event --title "Built AI Resume Generator" --type project --start 2025-05 --description "..."
 python scripts/career_vault.py --vault ~/.career-vault import-events --file examples/draft_events.json
 python scripts/career_vault.py --vault ~/.career-vault list-events

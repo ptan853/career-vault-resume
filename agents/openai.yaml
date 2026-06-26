@@ -1,7 +1,7 @@
 interface:
-  display_name: "Career Vault Resume"
-  short_description: "Local career memory and resume context"
-  default_prompt: "Use $career-vault-resume to build or update my local career vault from resumes, notes, links, and job descriptions."
+  display_name: "Career Timeline"
+  short_description: "Local professional timeline and identity memory"
+  default_prompt: "Use $career-timeline to build or update my local professional timeline from resumes, notes, links, and job descriptions."
 
 policy:
   allow_implicit_invocation: true

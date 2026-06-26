@@ -1,6 +1,6 @@
-# Career Vault Resume
+# Career Timeline
 
-![Career Vault Resume cover](assets/cover.png)
+![Career Timeline cover](assets/cover.png)
 
 <p align="center">
   <em>路漫漫其修远兮，吾将上下而求索。</em><br>
@@ -9,15 +9,18 @@
 
 Agents forget you between sessions.
 
-Career Vault Resume gives local coding agents a durable, inspectable memory of
-your professional identity: who you are, what you have built, where each fact
-came from, and how that context should be reused for resumes, interviews,
+Career Timeline gives local coding agents a durable, inspectable memory of your
+professional identity: who you are, what you have built, where each fact came
+from, and how that context should be reused for resumes, interviews,
 portfolios, job applications, and future agent sessions.
 
 It is not a visual resume designer. It is the identity and career-memory layer
 that a resume generator, portfolio builder, or interview-prep agent can trust.
 For polished, editable, design-forward resumes, install a separate resume
 designer skill and use it together with this vault.
+
+Formerly named Career Vault Resume. The repository, CLI, and default vault path
+still use the older naming for compatibility.
 
 ## Why This Exists
 
@@ -77,6 +80,9 @@ skill:
 ln -s /Users/pt623/Documents/career-vault-resume \
   /Users/pt623/.codex/skills/career-vault-resume
 ```
+
+The current skill name is `career-timeline`; older installs may still use the
+`career-vault-resume` directory name.
 
 The same `SKILL.md` can also be read by Claude Code, Gemini CLI, OpenCode, or
 other local agents that can access files and run shell commands. The CLI uses
