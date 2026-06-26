@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "id": "evt_2025_career_timeline_skill",
+  "title": "Career Timeline Skill",
+  "type": "project",
+  "custom_type": null,
+  "time": {
+    "start": "2025-05",
+    "end": "2025-08",
+    "precision": "month"
+  },
+  "status": "confirmed",
+  "description": "Built a local-first career timeline workflow and built agent-assisted event review and identity export workflows.",
+  "role": "Creator",
+  "organization": null,
+  "location": "Remote",
+  "tags": ["AI", "career", "timeline"],
+  "details": {
+    "tech_stack": "Python",
+    "achievement": "Designed a reusable career timeline pipeline."
+  },
+  "claims": [
+    "Designed a local-first career timeline workflow.",
+    "Created reviewed career events for future agent reuse."
+  ],
+  "sources": ["sources/src_project_note.md"],
+  "relations": [],
+  "visibility": "private",
+  "created_at": "2026-06-25T00:00:00+00:00",
+  "updated_at": "2026-06-25T00:00:00+00:00"
+}

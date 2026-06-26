@@ -23,7 +23,7 @@ def test_init_add_event_and_export(tmp_path: Path) -> None:
         vault,
         "add-event",
         "--title",
-        "AI Resume Generator",
+        "Career Timeline Skill",
         "--type",
         "project",
         "--start",
@@ -35,21 +35,21 @@ def test_init_add_event_and_export(tmp_path: Path) -> None:
         "--status",
         "confirmed",
         "--description",
-        "Built a template-driven resume generation workflow.",
+        "Built a local-first career timeline workflow.",
         "--claim",
-        "Designed a template-driven resume generation workflow.",
+        "Designed a local-first career timeline workflow.",
     )
 
     listed = run_cli(vault, "list-events", "--json")
     events = json.loads(listed.stdout)
     assert len(events) == 1
-    assert events[0]["title"] == "AI Resume Generator"
+    assert events[0]["title"] == "Career Timeline Skill"
     assert events[0]["status"] == "confirmed"
 
     run_cli(vault, "build-identity")
     identity = vault / "exports" / "agent_identity.md"
     assert identity.exists()
-    assert "AI Resume Generator" in identity.read_text()
+    assert "Career Timeline Skill" in identity.read_text()
 
 
 def test_agent_session_source_type(tmp_path: Path) -> None:
@@ -120,7 +120,7 @@ def test_profile_update_show_and_resume_readiness(tmp_path: Path) -> None:
     assert profile["resume_defaults"]["include_age"] is False
 
     ready = run_cli(vault, "check-readiness", "--for", "resume")
-    assert "Ready for resume generation" in ready.stdout
+    assert "Ready for downstream resume handoff" in ready.stdout
 
 
 def test_init_profile_contains_resume_header_fields(tmp_path: Path) -> None:
@@ -247,7 +247,7 @@ def test_profile_can_store_optional_photo_path(tmp_path: Path) -> None:
     assert profile["user"]["photo_path"] == str(photo)
 
     ready = run_cli(vault, "check-readiness", "--for", "resume")
-    assert "Ready for resume generation" in ready.stdout
+    assert "Ready for downstream resume handoff" in ready.stdout
 
     run_cli(vault, "build-identity")
     identity = (vault / "exports" / "agent_identity.md").read_text()

@@ -604,11 +604,11 @@ def command_build_resume_context(args: argparse.Namespace) -> None:
             "",
             "## Missing Information",
             "",
-            "- Confirm dates, metrics, ownership, and public visibility before final resume generation.",
+            "- Confirm dates, metrics, ownership, and public visibility before downstream resume handoff.",
             "",
             "## Risk Notes",
             "",
-            "- This context was selected by local keyword matching. Ask the agent to refine selection semantically before producing final resume bullets.",
+            "- This context was selected by local keyword matching. Ask the agent to refine selection semantically before handing facts to a resume designer.",
         ]
     )
     output = vault / "exports" / "resume_context.md"
@@ -892,7 +892,7 @@ def command_check_readiness(args: argparse.Namespace) -> None:
         for field in missing:
             print(f"- {field}")
         raise SystemExit(1)
-    print("Ready for resume generation")
+    print("Ready for downstream resume handoff")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -947,7 +947,7 @@ def build_parser() -> argparse.ArgumentParser:
     context.add_argument("--limit", type=int, default=8)
     context.set_defaults(func=command_build_resume_context)
 
-    basic_resume = sub.add_parser("build-basic-resume", help="Export a simple editable basic resume")
+    basic_resume = sub.add_parser("build-basic-resume", help="Export a legacy diagnostic basic resume")
     basic_resume.add_argument("--language", choices=["zh", "en"], default="en")
     basic_resume.add_argument("--pages", type=int, default=1)
     basic_resume.add_argument("--include-photo", action="store_true")

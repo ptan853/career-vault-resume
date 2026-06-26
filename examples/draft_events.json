@@ -1,7 +1,7 @@
 {
   "events": [
     {
-      "title": "Built AI Resume Generator",
+      "title": "Built Career Timeline Skill",
       "type": "project",
       "time": {
         "start": "2025-05",
@@ -9,19 +9,19 @@
         "precision": "month"
       },
       "status": "draft",
-      "description": "Built a template-driven resume generation workflow with AI-assisted content rewriting.",
+      "description": "Built a local-first career timeline workflow with AI-assisted content rewriting.",
       "role": "Creator",
       "location": "Remote",
-      "tags": ["AI", "resume", "LaTeX"],
+      "tags": ["AI", "career", "timeline"],
       "details": {
-        "tech_stack": "Python, LaTeX",
-        "achievement": "Designed a reusable resume generation pipeline."
+        "tech_stack": "Python",
+        "achievement": "Designed a reusable career timeline pipeline."
       },
       "claims": [
-        "Designed a template-driven resume generation workflow."
+        "Designed a local-first career timeline workflow."
       ],
       "sources": [
-        "sources/src_sample_resume.md"
+        "sources/src_project_note.md"
       ],
       "visibility": "private"
     }

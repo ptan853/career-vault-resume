@@ -5,7 +5,7 @@ career events.
 
 ## Extraction Principles
 
-- Extract detailed events, not one generic resume block.
+- Extract detailed events, not one generic biography or resume block.
 - Preserve the source before summarizing it.
 - Split separate projects, awards, publications, roles, and milestones when they
   may be useful independently.
@@ -29,7 +29,7 @@ Create events for:
 - startups and products
 - meaningful milestones
 - career-relevant agent sessions that produced a project, release, document,
-  public artifact, interview preparation, or job application material
+  public artifact, interview preparation, or career artifact
 
 Do not create events for vague claims without evidence unless they are marked
 `needs_review`.
@@ -74,8 +74,8 @@ Use this card shape by default:
 - <short factual detail>
 
 **Claims**
-- <resume-safe claim>
-- <resume-safe claim>
+- <reusable factual claim>
+- <reusable factual claim>
 
 **Choices**
 Confirm this event / edit fields / mark needs_review / skip this event
@@ -100,15 +100,15 @@ Minimum event object:
 
 ```json
 {
-  "title": "Built AI Resume Generator",
+  "title": "Built Career Timeline Skill",
   "type": "project",
   "time": {
     "start": "2025-05",
     "precision": "month"
   },
-  "description": "Built a template-driven resume generation workflow.",
-  "claims": ["Designed a template-driven resume generation workflow."],
-  "sources": ["sources/src_sample_resume.md"]
+  "description": "Built a local-first career timeline workflow.",
+  "claims": ["Designed a local-first career timeline workflow."],
+  "sources": ["sources/src_project_note.md"]
 }
 ```
 
@@ -123,8 +123,7 @@ When extracting from the current agent session:
 1. Identify the artifact or outcome that was actually produced.
 2. Record the repo, files, commit, branch, PR, URL, or generated artifact when
    available.
-3. Write the event as a project, milestone, open source contribution, resume
-   preparation event, or custom event.
+3. Write the event as a project, milestone, open source contribution, career preparation event, or custom event.
 4. Keep status as `draft` unless the user explicitly confirms it.
 5. Avoid storing private raw chat unless the user asks.
 6. Mark unclear ownership, dates, and public visibility as `needs_review`.
@@ -163,4 +162,4 @@ Ask follow-up questions when:
 - metrics are impressive but unsupported
 - project ownership is ambiguous
 - source language is unclear or translation may change meaning
-- the event seems useful for resumes but lacks claims
+- the event seems useful for future artifacts but lacks claims

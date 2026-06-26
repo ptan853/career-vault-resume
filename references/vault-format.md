@@ -46,13 +46,14 @@ resume_defaults:
   include_age: false
 ```
 
-Name, email, phone, and current location are resume header fields. Store them in
-`profile.yaml`, not as career events. Age is optional and should not be shown by
-default; prefer `date_of_birth` only when the user explicitly wants age-related
-resume output.
+Name, email, phone, and current location are stable identity fields. Store them
+in `profile.yaml`, not as career events. Age is optional and should not be shown
+by default; prefer `date_of_birth` only when the user explicitly wants
+age-related output.
 
-`photo_path` is optional. Use it for templates, regions, or portfolio outputs
-where a headshot is appropriate. Do not require it for resume readiness.
+`photo_path` is optional. Use it for downstream templates, regions, or portfolio
+outputs where a headshot is appropriate. Do not require it for timeline
+readiness.
 
 ## Career Event
 
@@ -129,12 +130,13 @@ use publicly.
 
 ## Claims
 
-Claims are resume-safe facts. Prefer short, factual, reusable statements.
+Claims are reusable facts. Prefer short, factual statements that can support
+future artifacts without rewriting the underlying event.
 
 Good:
 
 ```text
-Designed a template-driven resume generation workflow.
+Designed a template-driven career artifact workflow.
 ```
 
 Avoid:

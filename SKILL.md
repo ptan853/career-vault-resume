@@ -1,28 +1,30 @@
 ---
 name: career-timeline
-description: Use when the user asks about their professional background, career history, identity, experience, projects, skills, resumes, CVs, job applications, JD matching, interview stories, portfolio material, or agent-readable user context.
+description: Use when the user asks about their professional background, career history, identity, experiences, projects, skills, portfolio material, interview stories, or agent-readable user context; also use when resume work needs verified timeline facts before drafting.
 ---
 
 # Career Timeline
 
 Use this skill to maintain a local, portable professional timeline and identity
 memory that agents can share across sessions. The vault stores profile details,
-source material, career events, resume-safe claims, evidence, and generated
-agent identity context. Resume support is a downstream fallback/export path, not
-the core purpose of the skill.
+source material, career events, reusable claims, evidence, and generated
+agent identity context. Resume support is limited to downstream handoff context and legacy/debug exports;
+resume writing, tailoring, visual design, and PDF production belong in a separate
+resume-designer skill.
 
 Trigger this skill implicitly for questions about the user's background,
-experience, career profile, projects, skills, professional identity, resume,
-CV, job application, portfolio, interview preparation, or JD matching work. The
+experience, career profile, projects, skills, professional identity, portfolio material, interview preparation, or
+agent-readable background context. If the user asks for resume/CV/JD tailoring,
+use this skill only to verify or complete the timeline, then hand off to a
+resume-designer workflow for drafting and export. The
 user does not need to name the skill.
 
 This is a skill-guided workflow with a small deterministic CLI. The agent is
 responsible for reading messy sources, extracting facts, asking review
 questions, and deciding what is safe to use. The CLI is responsible for local
 file operations such as initializing a vault, storing sources, adding events,
-listing events, and generating basic identity/resume-context exports. It does
-not currently perform fully automatic resume parsing, claim validation, complex
-visual resume design, or PDF resume rendering.
+listing events, and generating identity or handoff exports. It does
+not perform final resume writing, tailoring, visual design, or PDF rendering.
 
 ## Core Rules
 
@@ -31,14 +33,14 @@ visual resume design, or PDF resume rendering.
 - Preserve raw source material before extracting events.
 - Write AI output as draft events, draft claims, or patch previews unless the
   user explicitly confirms the information.
-- Prefer confirmed event claims when generating resumes or agent identity
-  summaries.
+- Prefer confirmed event claims when generating agent identity summaries or
+  downstream handoff context.
 - Mark uncertain fields as `needs_review` instead of forcing a value.
-- Keep facts language-neutral; localize only generated resume text.
-- Store resume header information such as name, email, phone, and current
+- Keep stored facts language-neutral; localize only downstream generated artifacts.
+- Store stable identity fields such as name, email, phone, and current
   location in `profile.yaml`, not as timeline events.
 - Store an optional profile photo/headshot path in `profile.yaml` only when the
-  user provides one or a downstream template needs one.
+  user provides one; do not require it for timeline readiness.
 - Do not include age by default. Ask before storing or showing age-related
   information.
 
@@ -62,20 +64,20 @@ repo unless the user explicitly wants the career memory versioned there.
 5. Import reviewed draft events in bulk, or add a single event directly.
 6. Add concise event-level claims when the source supports them.
 7. Build `exports/agent_identity.md` when an agent needs user background.
-8. Build `exports/resume_context.md` when a user provides a target JD.
-9. Build `exports/basic_resume.*` only when the user wants a simple,
-   conservative resume from the vault.
+8. Build timeline handoff context only when a downstream tool needs verified
+   facts.
 
-This skill can produce a simple black-and-white basic resume as JSON, Markdown,
-and editable HTML. Do not imply that it produces polished visual resume designs
-or final PDFs. Complex, highly designed, editable resumes should be handled by a
-separate resume-design skill that consumes this vault's exported context.
+Do not present this skill as a resume generator. The CLI still includes legacy
+`build-resume-context` and `build-basic-resume` commands for compatibility and
+diagnostics, but final resume writing, JD tailoring, template selection, visual
+design, editable HTML, DOCX/PDF export, and per-application state belong in a
+separate resume-designer skill that consumes this timeline.
 
 ## Agent-Guided Use
 
 Guide the user through the process instead of asking them to edit YAML. Ask for
-the smallest useful next input: an old resume, a project link, a rough story, a
-JD, or confirmation of uncertain fields.
+the smallest useful next input: an old resume, a project link, a rough story,
+a profile field, or confirmation of uncertain event fields.
 
 After extracting events, show visible draft information and confirmation choices
 before writing to the timeline. The default review format is one event card per
@@ -102,36 +104,22 @@ confirms the event. After the user reviews the list, import the draft with
 `import-events`. This keeps semantic extraction in the agent while making local
 storage deterministic.
 
-When the user asks for a resume, check whether `profile.yaml` has
-`display_name`, `email`, `phone`, and `location`. If any are missing, ask for
-only the missing fields before drafting the resume. If these values appear in a
-source, treat them as suggestions and ask before writing them to the profile.
-Age is optional and should remain excluded unless the user explicitly requests
-it or the target resume context requires it.
+When the user asks for a resume, CV, JD match, or job application material, do
+not draft the resume in this skill. First check whether the timeline has enough
+verified profile and event facts for a downstream resume-designer workflow. If
+profile basics such as display name, email, phone, or location are missing, ask
+for only the missing fields. If relevant events are missing or still
+`needs_review`, continue timeline intake and event confirmation before handoff.
 
-Photo/headshot is optional. If a target resume template, region, or portfolio
-style may benefit from a photo, tell the user they can provide one, but do not
-block resume readiness on it. For conservative or ATS-oriented resumes, default
-to no photo unless the user asks.
+Photo/headshot is optional profile data. Tell the user they may provide one for
+downstream templates, but do not block timeline work on it and do not decide
+resume photo usage here.
 
-Photo guidance for basic resumes: recommend a square or 4:5 headshot, at least
-600x600 px, JPG or PNG. The current CLI copies the photo into
-`exports/assets/` and displays it in a fixed frame. It does not yet crop,
-retouch, or automatically align the face.
+Legacy/basic resume exports are only fallback diagnostics. Do not treat
+`build-basic-resume` output as a final application resume, and do not use it to
+replace a resume-designer workflow.
 
-Basic resume generation must accept the user's requested language and page
-count. Use `zh` or `en` section labels at output time. For one-page resumes,
-prefer fewer events and concise bullets; for two-page resumes, allow more
-events. Never shrink text until it becomes unreadable.
-
-Do not hard-code one universal section list. Use preferred section candidates
-such as Education, Work Experience, Internship Experience, Projects, Open
-Source, Skills, Research, Publications, Awards, Certifications, Languages, and
-Summary, but select, merge, rename, or omit sections according to the user's
-background, target role, language, and page limit. The renderer should respect
-the section order produced by the agent or derived from the available events.
-
-When the user asks what the agent knows about them, asks for user-specific
+Do not hard-code one universal section list. When the user asks what the agent knows about them, asks for user-specific
 professional advice, or asks about their background, build or read
 `exports/agent_identity.md` before answering. If the identity export is missing
 or stale, regenerate it with `build-identity`.
@@ -140,7 +128,7 @@ or stale, regenerate it with `build-identity`.
 
 When a session produces career-relevant work, offer to save it as a draft event.
 This applies to completed projects, open-source releases, research notes,
-portfolio work, job-search preparation, resume generation, interviews, and
+portfolio work, job-search preparation, interview preparation, and
 significant debugging or engineering work.
 
 Use `agent_session` as the source type. The source should summarize what
@@ -156,22 +144,22 @@ vault as a draft event?
 ```
 
 Session-derived events should usually start as `draft` because the user may want
-to adjust ownership, dates, public visibility, or resume wording.
+to adjust ownership, dates, public visibility, or artifact wording.
 
 ## Data Model
 
 Use these primary objects:
 
 - `SourceMaterial`: raw text, file references, URLs, GitHub/project material,
-  resume PDFs, job descriptions, and notes.
+  resume PDFs, job descriptions, notes, and project material.
 - `CareerEvent`: timeline unit such as work, internship, project, education,
   award, publication, certification, scholarship, startup, milestone, or custom.
-- `Claim`: resume-safe fact derived from one event. In the current CLI, claims
+- `Claim`: reusable fact derived from one event. In the current CLI, claims
   are stored as strings inside each event.
 - `Evidence`: source reference that supports a claim. In the current CLI,
   evidence is represented by event `sources`; standalone evidence records are a
   planned extension.
-- `ResumeContext`: selected events and claims for a target job description.
+- `Handoff context`: selected timeline facts for downstream tools such as resume designers or interview-prep agents.
 
 Events should be flexible. Do not force work -> project -> achievement nesting.
 Use event relations such as `part_of`, `occurred_during`, `related_to`,
@@ -182,12 +170,12 @@ Use event relations such as `part_of`, `occurred_during`, `related_to`,
 When extracting from resumes, files, notes, or links, look for small, reusable
 events. One internship may contain several project events, one project may
 contain claims, and one award or paper should be its own event when useful for
-resume generation.
+future reuse.
 
 Each event should include at least:
 
 ```yaml
-title: Built AI Resume Generator
+title: Built Career Timeline Skill
 type: project
 time:
   start: 2025-05
@@ -198,18 +186,18 @@ time:
 Use optional fields when supported by the source:
 
 ```yaml
-description: Built a LaTeX-template resume generation workflow with AI-assisted content rewriting.
+description: Built a local-first career timeline workflow with AI-assisted content rewriting.
 role: Creator
 organization: null
 location: Remote
-tags: [AI, resume, LaTeX]
+tags: [AI, career, artifacts]
 details:
-  tech_stack: Python, LaTeX, FastAPI
-  achievement: Designed a reusable resume generation pipeline.
+  tech_stack: Python
+  achievement: Designed a reusable career timeline pipeline.
 claims:
-  - Designed a template-driven resume generation workflow.
+  - Designed a local-first career timeline workflow.
 sources:
-  - sources/resume_20260404.pdf
+  - sources/src_project_note.md
 visibility: private
 status: draft
 ```
@@ -222,29 +210,30 @@ Use `scripts/career_timeline.py` for deterministic file operations:
 python scripts/career_timeline.py --vault ~/.career-vault init
 python scripts/career_timeline.py --vault ~/.career-vault add-source --type note --title "Career note" --text "..."
 python scripts/career_timeline.py --vault ~/.career-vault add-source --type agent_session --title "Built Career Timeline skill" --text "..."
-python scripts/career_timeline.py --vault ~/.career-vault add-event --title "Built AI Resume Generator" --type project --start 2025-05 --description "..."
+python scripts/career_timeline.py --vault ~/.career-vault add-event --title "Built Career Timeline Skill" --type project --start 2025-05 --description "..."
 python scripts/career_timeline.py --vault ~/.career-vault import-events --file examples/draft_events.json
 python scripts/career_timeline.py --vault ~/.career-vault list-events
 python scripts/career_timeline.py --vault ~/.career-vault profile show --json
 python scripts/career_timeline.py --vault ~/.career-vault profile update --display-name "Pat Example" --email "pat@example.com" --phone "+1 555 0100" --location "San Francisco, CA" --photo-path path/to/headshot.jpg
 python scripts/career_timeline.py --vault ~/.career-vault check-readiness --for resume
 python scripts/career_timeline.py --vault ~/.career-vault build-identity
+# Legacy/debug handoff exports only; use a resume-designer skill for final resumes.
 python scripts/career_timeline.py --vault ~/.career-vault build-resume-context --jd path/to/jd.md
 python scripts/career_timeline.py --vault ~/.career-vault build-basic-resume --language zh --pages 1 --include-photo
 ```
 
 The script does not replace agent judgment. Use the script to create, list, and
 export vault files after extracting structured content. Schema validation,
-standalone claim storage, source metadata records, photo cropping, and resume
-PDF rendering are not implemented yet.
+standalone claim storage, source metadata records, photo processing, final resume writing, and PDF rendering are out of scope for
+this skill.
 
 ## References
 
 - Read `references/vault-format.md` before creating or modifying vault files.
 - Read `references/extraction-guide.md` before extracting events from messy
   resumes, notes, links, or project material.
-- Read `references/resume-context.md` before producing a targeted resume context
-  from a JD.
+- Read `references/resume-context.md` only when preparing legacy/debug handoff
+  context for a downstream resume workflow.
 
 ## Output Expectations
 
@@ -256,5 +245,5 @@ When updating the vault, summarize:
 - fields marked `needs_review`
 - generated export paths
 
-When generating resume context, explain which events/claims were selected and
-which facts still need user confirmation.
+When preparing downstream handoff context, explain which timeline events/claims
+were selected and which facts still need user confirmation.

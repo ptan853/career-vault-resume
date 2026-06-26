@@ -1,87 +1,66 @@
-# Resume Context Generation
+# Downstream Handoff Context
 
-Use this guide when the user provides a job description and asks for a targeted
-resume, resume bullets, cover letter context, or interview preparation.
+Use this guide only when a downstream resume, cover-letter, interview, or
+portfolio workflow needs verified facts from the career timeline. This file does
+not define the final resume-writing process.
 
 ## Inputs
 
-- Target job description
+- Target request or job description, when available
 - Confirmed or draft career events
 - Confirmed or review-needed claims
-- User preferences and target locale
-- Template constraints if provided
+- User preferences and target locale, when known
+- Downstream constraints, when provided by another skill or tool
 
 ## Selection Rules
 
-- Prefer confirmed claims.
-- Include draft or `needs_review` claims only if clearly marked.
-- Select events by relevance to responsibilities, required skills, domain, and
-  seniority.
-- Do not fabricate missing metrics or technologies.
-- Preserve user truth over JD keyword matching.
+- Prefer confirmed claims and confirmed events.
+- Include draft or `needs_review` facts only if clearly marked.
+- Select events by relevance to responsibilities, skills, domain, seniority, and
+  evidence quality.
+- Do not fabricate missing metrics, technologies, employers, dates, or awards.
+- Preserve user truth over keyword matching.
 
-## Output Sections
+## Handoff Output
 
-Produce `exports/resume_context.md` with:
+Produce `exports/resume_context.md` only as a facts handoff with:
 
-- target job summary
+- target request summary
 - selected events
 - selected claims
 - missing information questions
-- suggested resume angle
+- suggested positioning notes
 - risk notes for unsupported facts
 
-For a simple basic resume, the CLI can also produce:
+The CLI also keeps legacy `basic_resume.*` exports for compatibility and quick
+manual inspection:
 
 - `exports/basic_resume.json`
 - `exports/basic_resume.md`
 - `exports/basic_resume.html`
 
-The basic resume is a conservative black-and-white fallback. It is not the
-design-forward resume path.
-By default, it uses confirmed events only. Draft or `needs_review` events should
-be confirmed by the user before being used in a formal resume.
+Treat these as diagnostics, not final application resumes. Final section choice,
+JD analysis, bullet rewriting, visual design, editable output, and PDF rendering
+belong in a separate resume-designer workflow.
 
-## Basic Resume Controls
+## Readiness Checks
 
-Support user preferences for:
+Before handoff, verify:
 
-- language: `zh` or `en`
-- page count: usually `1` or `2`
-- optional photo/headshot inclusion
+- profile basics: name, email, phone, and current location
+- target role or target request, if relevant
+- enough confirmed events for the requested artifact
+- important draft or `needs_review` facts are clearly labeled
+- optional photo/headshot path is present only if the downstream template needs
+  one
 
-Photo is optional. If used, recommend JPG/PNG, square or 4:5, at least 600x600
-px. The current CLI places the image in a fixed frame but does not crop or align
-faces yet.
+If essentials are missing, ask only for the missing fields and stay in timeline
+intake until the user confirms the facts.
 
-## Section Selection
+## What Not To Do Here
 
-Do not force every resume to use the same sections. Prefer these candidates,
-then select, merge, rename, or omit sections based on the user's background, JD,
-language, and page limit:
-
-- Education
-- Work Experience
-- Internship Experience
-- Projects
-- Personal Projects & Open Source
-- Skills
-- Research
-- Publications
-- Awards
-- Certifications
-- Languages
-- Summary
-
-For Chinese resumes, localize section labels at output time, such as `教育背景`,
-`工作经历`, `项目经历`, and `专业技能`.
-
-## Rewrite Rules
-
-When rewriting for a JD:
-
-- Keep facts unchanged.
-- Change emphasis, order, and language.
-- Make bullets concise and evidence-aware.
-- Localize to the requested language only at output time.
-- Keep private events out of public resumes unless user allows them.
+- Do not decide the final resume section structure.
+- Do not rewrite every event into application bullets.
+- Do not choose visual templates, page count, or PDF layout.
+- Do not move private events into public artifacts without user permission.
+- Do not treat `basic_resume.md` or `basic_resume.html` as final output.
