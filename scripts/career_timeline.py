@@ -8,10 +8,8 @@ most agent environments without installing dependencies.
 from __future__ import annotations
 
 import argparse
-import html
 import json
 import re
-import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,64 +39,6 @@ EVENT_STATUSES = {"draft", "confirmed", "needs_review", "archived"}
 VISIBILITIES = {"private", "resume", "public"}
 SOURCE_TYPES = {"note", "resume", "file", "url", "github", "jd", "agent_session"}
 RESUME_REQUIRED_PROFILE_FIELDS = ("display_name", "email", "phone", "location")
-SECTION_TITLES = {
-    "zh": {
-        "education": "教育背景",
-        "work": "工作经历",
-        "internship": "实习经历",
-        "project": "项目经历",
-        "open_source": "个人项目与开源贡献",
-        "research": "研究经历",
-        "publication": "论文发表",
-        "award": "获奖经历",
-        "scholarship": "获奖经历",
-        "certification": "证书",
-        "course": "课程",
-        "competition": "竞赛经历",
-        "volunteer": "志愿经历",
-        "startup": "创业经历",
-        "milestone": "其他经历",
-        "custom": "其他经历",
-    },
-    "en": {
-        "education": "Education",
-        "work": "Work Experience",
-        "internship": "Internship Experience",
-        "project": "Projects",
-        "open_source": "Personal Projects & Open Source",
-        "research": "Research",
-        "publication": "Publications",
-        "award": "Awards",
-        "scholarship": "Awards",
-        "certification": "Certifications",
-        "course": "Courses",
-        "competition": "Competitions",
-        "volunteer": "Volunteer Experience",
-        "startup": "Startup Experience",
-        "milestone": "Other Experience",
-        "custom": "Other Experience",
-    },
-}
-SECTION_ORDER = [
-    "education",
-    "work",
-    "internship",
-    "project",
-    "open_source",
-    "research",
-    "publication",
-    "award",
-    "scholarship",
-    "certification",
-    "course",
-    "competition",
-    "volunteer",
-    "startup",
-    "milestone",
-    "custom",
-]
-
-
 def default_profile() -> dict[str, Any]:
     return {
         "schema_version": 1,
@@ -559,271 +499,6 @@ def format_event_markdown(event: dict[str, Any]) -> list[str]:
     return lines
 
 
-def command_build_resume_context(args: argparse.Namespace) -> None:
-    vault = vault_path(args)
-    ensure_vault(vault)
-    jd_path = Path(args.jd).expanduser().resolve()
-    if not jd_path.exists():
-        raise SystemExit(f"JD file does not exist: {jd_path}")
-    jd_text = jd_path.read_text(encoding="utf-8", errors="replace")
-    events = load_events(vault)
-    keywords = set(re.findall(r"[A-Za-z][A-Za-z0-9+#.-]{2,}", jd_text.lower()))
-
-    def score(event: dict[str, Any]) -> int:
-        haystack = " ".join(
-            str(value)
-            for value in [
-                event.get("title", ""),
-                event.get("type", ""),
-                event.get("description", ""),
-                " ".join(event.get("tags") or []),
-                " ".join(event.get("claims") or []),
-            ]
-        ).lower()
-        return sum(1 for word in keywords if word in haystack)
-
-    ranked = sorted(events, key=score, reverse=True)
-    selected = [event for event in ranked if score(event) > 0][: args.limit]
-    if not selected:
-        selected = ranked[: args.limit]
-
-    lines = [
-        "# Resume Context",
-        "",
-        "## Target Job Description",
-        "",
-        jd_text.strip(),
-        "",
-        "## Selected Career Events",
-        "",
-    ]
-    for event in selected:
-        lines.extend(format_event_markdown(event))
-    lines.extend(
-        [
-            "",
-            "## Missing Information",
-            "",
-            "- Confirm dates, metrics, ownership, and public visibility before final resume generation.",
-            "",
-            "## Risk Notes",
-            "",
-            "- This context was selected by local keyword matching. Ask the agent to refine selection semantically before producing final resume bullets.",
-        ]
-    )
-    output = vault / "exports" / "resume_context.md"
-    output.write_text("\n".join(lines).strip() + "\n", encoding="utf-8")
-    print(output)
-
-
-def event_span(event: dict[str, Any], language: str) -> str:
-    time = event.get("time", {})
-    start = time.get("start") or ""
-    end = time.get("end") or ""
-    if start and end:
-        return f"{start} - {end}"
-    if start:
-        return f"{start} - {'至今' if language == 'zh' else 'Present'}"
-    return ""
-
-
-def event_to_resume_item(event: dict[str, Any], language: str) -> dict[str, Any]:
-    claims = event.get("claims") or []
-    bullets = claims if claims else ([event["description"]] if event.get("description") else [])
-    return {
-        "title": event.get("title", event.get("id", "")),
-        "role": event.get("role"),
-        "organization": event.get("organization"),
-        "date": event_span(event, language),
-        "description": event.get("description", ""),
-        "bullets": bullets,
-        "source_event_id": event.get("id"),
-    }
-
-
-def build_basic_resume_draft(
-    profile: dict[str, Any],
-    events: list[dict[str, Any]],
-    language: str,
-    page_count: int,
-    include_photo: bool,
-) -> dict[str, Any]:
-    user = profile.get("user", {})
-    confirmed = [event for event in events if event.get("status") == "confirmed"]
-    max_items = 6 if page_count == 1 else 12
-    selected = confirmed[:max_items]
-    titles = SECTION_TITLES[language]
-    sections = []
-    for event_type in SECTION_ORDER:
-        items = [
-            event_to_resume_item(event, language)
-            for event in selected
-            if event.get("type") == event_type
-        ]
-        if items:
-            sections.append({"type": event_type, "title": titles[event_type], "items": items})
-    photo_path = user.get("photo_path") if include_photo else None
-    return {
-        "schema_version": 1,
-        "language": language,
-        "page_count": page_count,
-        "include_photo": bool(photo_path),
-        "profile": {
-            "name": user.get("display_name", ""),
-            "headline": user.get("headline", ""),
-            "email": user.get("email", ""),
-            "phone": user.get("phone", ""),
-            "location": user.get("location", ""),
-            "target_roles": user.get("target_roles", []),
-            "photo_path": photo_path,
-        },
-        "sections": sections,
-    }
-
-
-def render_basic_resume_markdown(draft: dict[str, Any]) -> str:
-    profile = draft["profile"]
-    lines = [f"# {profile.get('name') or 'Resume'}", ""]
-    contact = [
-        value
-        for value in [profile.get("phone"), profile.get("email"), profile.get("location")]
-        if value
-    ]
-    if contact:
-        lines.extend([" · ".join(contact), ""])
-    target_roles = profile.get("target_roles") or []
-    if target_roles:
-        label = "求职方向" if draft["language"] == "zh" else "Target Roles"
-        sep = "：" if draft["language"] == "zh" else ": "
-        lines.extend([f"**{label}**{sep}{', '.join(target_roles)}", ""])
-    for section in draft["sections"]:
-        lines.extend([f"## {section['title']}", ""])
-        for item in section["items"]:
-            heading = item["title"]
-            if item.get("organization") and item["organization"] not in heading:
-                heading = f"{item['organization']} - {heading}"
-            if item.get("date"):
-                heading = f"{heading} | {item['date']}"
-            lines.append(f"### {heading}")
-            if item.get("role"):
-                lines.append(f"**{item['role']}**")
-            for bullet in item.get("bullets") or []:
-                lines.append(f"- {bullet}")
-            lines.append("")
-    return "\n".join(lines).strip() + "\n"
-
-
-def copy_resume_photo(vault: Path, photo_path: str | None) -> str | None:
-    if not photo_path:
-        return None
-    source = Path(photo_path).expanduser().resolve()
-    if not source.exists():
-        return None
-    assets = vault / "exports" / "assets"
-    assets.mkdir(parents=True, exist_ok=True)
-    suffix = source.suffix or ".jpg"
-    target = assets / f"headshot{suffix}"
-    shutil.copy2(source, target)
-    return f"assets/{target.name}"
-
-
-def editable(value: str, field: str) -> str:
-    return f'<span contenteditable="true" data-field="{html.escape(field)}">{html.escape(value)}</span>'
-
-
-def render_basic_resume_html(draft: dict[str, Any], photo_src: str | None) -> str:
-    profile = draft["profile"]
-    lang = draft["language"]
-    page_label = "目标页数" if lang == "zh" else "Target pages"
-    label_sep = "：" if lang == "zh" else ": "
-    contact = [
-        value
-        for value in [profile.get("phone"), profile.get("email"), profile.get("location")]
-        if value
-    ]
-    photo_html = ""
-    if photo_src:
-        photo_html = f'<img class="headshot" src="{html.escape(photo_src)}" alt="profile photo">'
-    section_html = []
-    for section_index, section in enumerate(draft["sections"]):
-        item_html = []
-        for item_index, item in enumerate(section["items"]):
-            bullet_html = "".join(
-                f"<li>{editable(str(bullet), f'sections.{section_index}.items.{item_index}.bullets.{bullet_index}')}</li>"
-                for bullet_index, bullet in enumerate(item.get("bullets") or [])
-            )
-            meta = " · ".join(value for value in [item.get("role"), item.get("organization"), item.get("date")] if value)
-            item_html.append(
-                "<article class=\"resume-item\">"
-                f"<h3>{editable(item['title'], f'sections.{section_index}.items.{item_index}.title')}</h3>"
-                f"<p class=\"meta\">{html.escape(meta)}</p>"
-                f"<ul>{bullet_html}</ul>"
-                "</article>"
-            )
-        section_html.append(
-            f"<section><h2>{html.escape(section['title'])}</h2>{''.join(item_html)}</section>"
-        )
-    return f"""<!doctype html>
-<html lang="{html.escape(lang)}">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{html.escape(profile.get('name') or 'Resume')}</title>
-  <style>
-    :root {{ --ink: #161616; --muted: #5f6368; --rule: #d7d7d7; }}
-    * {{ box-sizing: border-box; }}
-    body {{ margin: 0; background: #f5f5f5; color: var(--ink); font-family: Arial, "Noto Sans SC", sans-serif; }}
-    .page {{ width: 210mm; min-height: 297mm; margin: 24px auto; padding: 16mm 18mm; background: white; box-shadow: 0 8px 28px rgba(0,0,0,.08); }}
-    header {{ display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: start; border-bottom: 1px solid var(--rule); padding-bottom: 12px; }}
-    h1 {{ margin: 0 0 8px; font-size: 32px; letter-spacing: 0; }}
-    .contact, .meta, .settings {{ color: var(--muted); font-size: 13px; line-height: 1.6; }}
-    .headshot {{ width: 32mm; height: 32mm; object-fit: cover; border-radius: 4px; border: 1px solid var(--rule); }}
-    h2 {{ margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--rule); font-size: 18px; }}
-    h3 {{ margin: 10px 0 2px; font-size: 15px; }}
-    ul {{ margin: 6px 0 0 18px; padding: 0; }}
-    li {{ margin: 3px 0; line-height: 1.45; }}
-    [contenteditable="true"]:focus {{ outline: 2px solid #8ab4f8; background: #f8fbff; }}
-    @media print {{ body {{ background: white; }} .page {{ margin: 0; box-shadow: none; }} }}
-  </style>
-</head>
-<body>
-  <main class="page">
-    <header>
-      <div>
-        <h1>{editable(profile.get('name') or 'Resume', 'profile.name')}</h1>
-        <div class="contact">{html.escape(' · '.join(contact))}</div>
-        <div class="settings">{page_label}{label_sep}{draft['page_count']}</div>
-      </div>
-      {photo_html}
-    </header>
-    {''.join(section_html)}
-  </main>
-</body>
-</html>
-"""
-
-
-def command_build_basic_resume(args: argparse.Namespace) -> None:
-    vault = vault_path(args)
-    ensure_vault(vault)
-    if args.pages < 1 or args.pages > 2:
-        raise SystemExit("--pages must be 1 or 2")
-    profile = read_profile(vault)
-    events = load_events(vault)
-    draft = build_basic_resume_draft(profile, events, args.language, args.pages, args.include_photo)
-    outputs = vault / "exports"
-    outputs.mkdir(parents=True, exist_ok=True)
-    json_path = outputs / "basic_resume.json"
-    md_path = outputs / "basic_resume.md"
-    html_path = outputs / "basic_resume.html"
-    photo_src = copy_resume_photo(vault, draft["profile"].get("photo_path"))
-    json_path.write_text(json.dumps(draft, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    md_path.write_text(render_basic_resume_markdown(draft), encoding="utf-8")
-    html_path.write_text(render_basic_resume_html(draft, photo_src), encoding="utf-8")
-    print(json_path)
-    print(md_path)
-    print(html_path)
-
 
 def command_profile_show(args: argparse.Namespace) -> None:
     vault = vault_path(args)
@@ -892,7 +567,7 @@ def command_check_readiness(args: argparse.Namespace) -> None:
         for field in missing:
             print(f"- {field}")
         raise SystemExit(1)
-    print("Ready for resume generation")
+    print("Ready for downstream resume handoff")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -942,16 +617,6 @@ def build_parser() -> argparse.ArgumentParser:
     identity = sub.add_parser("build-identity", help="Export agent identity summary")
     identity.set_defaults(func=command_build_identity)
 
-    context = sub.add_parser("build-resume-context", help="Export resume context for a JD")
-    context.add_argument("--jd", required=True)
-    context.add_argument("--limit", type=int, default=8)
-    context.set_defaults(func=command_build_resume_context)
-
-    basic_resume = sub.add_parser("build-basic-resume", help="Export a simple editable basic resume")
-    basic_resume.add_argument("--language", choices=["zh", "en"], default="en")
-    basic_resume.add_argument("--pages", type=int, default=1)
-    basic_resume.add_argument("--include-photo", action="store_true")
-    basic_resume.set_defaults(func=command_build_basic_resume)
 
     profile = sub.add_parser("profile", help="Show or update vault profile")
     profile_sub = profile.add_subparsers(dest="profile_command", required=True)

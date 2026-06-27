@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository defines a local-first professional timeline and identity memory skill with a supporting CLI. Core behavior lives in `scripts/career_timeline.py`, a standard-library Python command-line tool. Skill instructions are in `SKILL.md`; supporting documentation is in `references/`. JSON schemas for vault files live in `schemas/`. Visual assets live in `assets/`. Sample data and job-description inputs are in `examples/`, including `examples/sample_vault/`. Tests live in `tests/` and exercise the CLI end to end.
+This repository defines a local-first professional timeline and identity memory skill with a supporting CLI. Core behavior lives in `scripts/career_timeline.py`, a standard-library Python command-line tool. Skill instructions are in `SKILL.md`; supporting documentation is in `references/`. JSON schemas for vault files live in `schemas/`. The minimal draft-event example lives in `examples/`. Tests live in `tests/` and exercise the CLI end to end.
 
 ## Build, Test, and Development Commands
 

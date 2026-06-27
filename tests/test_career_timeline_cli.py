@@ -23,7 +23,7 @@ def test_init_add_event_and_export(tmp_path: Path) -> None:
         vault,
         "add-event",
         "--title",
-        "AI Resume Generator",
+        "Career Timeline Skill",
         "--type",
         "project",
         "--start",
@@ -35,21 +35,21 @@ def test_init_add_event_and_export(tmp_path: Path) -> None:
         "--status",
         "confirmed",
         "--description",
-        "Built a template-driven resume generation workflow.",
+        "Built a local-first career timeline workflow.",
         "--claim",
-        "Designed a template-driven resume generation workflow.",
+        "Designed a local-first career timeline workflow.",
     )
 
     listed = run_cli(vault, "list-events", "--json")
     events = json.loads(listed.stdout)
     assert len(events) == 1
-    assert events[0]["title"] == "AI Resume Generator"
+    assert events[0]["title"] == "Career Timeline Skill"
     assert events[0]["status"] == "confirmed"
 
     run_cli(vault, "build-identity")
     identity = vault / "exports" / "agent_identity.md"
     assert identity.exists()
-    assert "AI Resume Generator" in identity.read_text()
+    assert "Career Timeline Skill" in identity.read_text()
 
 
 def test_agent_session_source_type(tmp_path: Path) -> None:
@@ -120,7 +120,7 @@ def test_profile_update_show_and_resume_readiness(tmp_path: Path) -> None:
     assert profile["resume_defaults"]["include_age"] is False
 
     ready = run_cli(vault, "check-readiness", "--for", "resume")
-    assert "Ready for resume generation" in ready.stdout
+    assert "Ready for downstream resume handoff" in ready.stdout
 
 
 def test_init_profile_contains_resume_header_fields(tmp_path: Path) -> None:
@@ -247,116 +247,12 @@ def test_profile_can_store_optional_photo_path(tmp_path: Path) -> None:
     assert profile["user"]["photo_path"] == str(photo)
 
     ready = run_cli(vault, "check-readiness", "--for", "resume")
-    assert "Ready for resume generation" in ready.stdout
+    assert "Ready for downstream resume handoff" in ready.stdout
 
     run_cli(vault, "build-identity")
     identity = (vault / "exports" / "agent_identity.md").read_text()
     assert "Photo available" in identity
 
-
-def test_build_basic_resume_outputs_dynamic_editable_files(tmp_path: Path) -> None:
-    vault = tmp_path / ".career-vault"
-    photo = tmp_path / "headshot.jpg"
-    photo.write_bytes(b"fake image bytes")
-
-    run_cli(vault, "init")
-    run_cli(
-        vault,
-        "profile",
-        "update",
-        "--display-name",
-        "谭沛烽",
-        "--email",
-        "peifeng@example.com",
-        "--phone",
-        "+86 178 0000 0000",
-        "--location",
-        "长沙",
-        "--photo-path",
-        str(photo),
-        "--target-role",
-        "AI算法工程师",
-    )
-    run_cli(
-        vault,
-        "add-event",
-        "--title",
-        "帝国理工大学 - 应用计算科学与工程 - 硕士",
-        "--type",
-        "education",
-        "--start",
-        "2023-09",
-        "--end",
-        "2025-01",
-        "--status",
-        "confirmed",
-        "--description",
-        "核心课程：机器学习、应用计算科学、数值方法。",
-    )
-    run_cli(
-        vault,
-        "add-event",
-        "--title",
-        "PM Agent智能项目管理助手",
-        "--type",
-        "work",
-        "--start",
-        "2026-03",
-        "--status",
-        "confirmed",
-        "--role",
-        "Agent算法工程师",
-        "--organization",
-        "武汉光庭信息科技",
-        "--description",
-        "设计并开发基于 LLM Agent 的项目管理助手。",
-        "--claim",
-        "设计并开发基于 LLM Agent 的项目管理助手。",
-    )
-    run_cli(
-        vault,
-        "add-event",
-        "--title",
-        "通过深度学习预测热带气旋行为",
-        "--type",
-        "project",
-        "--start",
-        "2024-03",
-        "--status",
-        "confirmed",
-        "--description",
-        "使用 PyTorch 搭建 CNN-ConvLSTM 模型融合图像与数值气象数据。",
-    )
-
-    result = run_cli(
-        vault,
-        "build-basic-resume",
-        "--language",
-        "zh",
-        "--pages",
-        "1",
-        "--include-photo",
-    )
-    assert "basic_resume.md" in result.stdout
-    assert "basic_resume.html" in result.stdout
-    assert "basic_resume.json" in result.stdout
-
-    draft = json.loads((vault / "exports" / "basic_resume.json").read_text())
-    assert draft["language"] == "zh"
-    assert draft["page_count"] == 1
-    assert draft["include_photo"] is True
-    assert [section["title"] for section in draft["sections"]] == ["教育背景", "工作经历", "项目经历"]
-
-    markdown = (vault / "exports" / "basic_resume.md").read_text()
-    assert "# 谭沛烽" in markdown
-    assert "## 工作经历" in markdown
-    assert "PM Agent智能项目管理助手" in markdown
-
-    html = (vault / "exports" / "basic_resume.html").read_text()
-    assert 'lang="zh"' in html
-    assert 'contenteditable="true"' in html
-    assert "headshot.jpg" in html
-    assert "目标页数：1" in html
 
 
 def test_add_event_keeps_multiple_non_latin_titles_in_same_second(tmp_path: Path) -> None:
