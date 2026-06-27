@@ -116,7 +116,32 @@ Fail if:
 - The agent imports all events without review.
 - The agent turns the batch into a resume draft.
 
-## Eval 5: Resume Boundary
+## Eval 5: Project Material Detail
+
+Prompt:
+
+```text
+这个 GitHub 项目是一个 AI 命令行工具，README 说它支持 TUI、LLM tool routing、workspace sandbox、SOP plan 渲染和单元测试。我主要负责 SOP plan 数据模型、风险摘要渲染、step order 处理，以及把几个工具迁移到统一 action discovery。
+```
+
+Expected behavior:
+
+- The agent creates a project/open-source draft event, not a final resume bullet.
+- The event card includes context, contribution, implementation, outcome or
+  artifact, evidence/source, reusable claims, and needs-review items.
+- Claims are specific enough to rewrite later, such as structured SOP plan data
+  model, risk-summary rendering, step ordering, or action discovery migration.
+- The agent marks ownership, metrics, release status, and public visibility as
+  `needs_review` if they are not explicitly confirmed.
+
+Fail if:
+
+- The event says only “worked on an AI CLI project.”
+- The agent invents metrics, leadership, public release status, or production
+  adoption.
+- The agent stores the event as confirmed without user confirmation.
+
+## Eval 6: Resume Boundary
 
 Prompt:
 

@@ -70,8 +70,10 @@ Use this card shape by default:
 | Needs Review | <uncertain dates, metrics, ownership, visibility, etc.> |
 
 **Details**
-- <short factual detail>
-- <short factual detail>
+- Context: <problem, goal, audience, or why it mattered>
+- Contribution: <what the user personally did>
+- Implementation: <methods, technologies, modules, tools>
+- Outcome: <artifact, metric, result, or unknown>
 
 **Claims**
 - <reusable factual claim>
@@ -91,6 +93,76 @@ Only create a review Markdown or HTML file when the user asks for one, the
 batch is too large for chat, or the review needs to be shared outside the
 session. Routine reviews should stay in the conversation.
 
+## Event Detail Quality
+
+Use STAR/CAR/PAR-style thinking when the source has enough detail: capture the
+situation or challenge, the user's action, and the result. This is not final
+resume wording; it is reusable factual material for later tailoring.
+
+Quality levels:
+
+| Level | Use When | Minimum Standard |
+|---|---|---|
+| Storable | The source proves the event exists but detail is thin. | title, type, time or unknown, source, short description; status `draft`. |
+| Resume-usable | A downstream resume or interview tool can rewrite it. | context, contribution, implementation, outcome or artifact, evidence, and 1-3 reusable claims. |
+| Strong | The event can be a flagship story. | clear ownership, technical or domain specifics, evidence-backed outcome, visibility, and unresolved risks listed. |
+
+Prefer action-oriented claims, but keep them factual. A strong claim names what
+changed, how the user contributed, and any supported result. Avoid claims that
+only restate responsibility.
+
+Examples:
+
+```text
+Weak: Worked on an AI command-line project.
+Better: Implemented structured SOP plan data and rendering flow for an AI
+command-line project, enabling clearer risk summaries and step ordering.
+Needs review: exact ownership and release status.
+```
+
+For different event types, emphasize different details:
+
+- Work or internship: role scope, team/product context, owned work, tools,
+  shipped outcomes, metrics, collaborators, and reporting line when relevant.
+- Project or open source: goal, users, architecture, modules touched, commits or
+  PRs, tests, release/demo status, and user's contribution boundary.
+- Education: institution, degree, major, dates, relevant coursework, thesis, GPA
+  or honors only when supported.
+- Award/certification: issuer, date, selection criteria, level, and evidence.
+- Research/publication: question, method, data, experiments, contribution, venue
+  or status, and artifact link.
+
+## GitHub And Project Material
+
+When extracting from a repo, project folder, README, PR, issue, or technical
+write-up, inspect for:
+
+- project purpose and target users from README or docs
+- languages, frameworks, tools, models, datasets, services, and infrastructure
+- important modules, directories, entry points, tests, benchmarks, and CI
+- user-owned commits, PRs, files, branches, or explicit statements of ownership
+- shipped artifacts: releases, demos, packages, reports, screenshots, docs
+- measurable signals: latency, throughput, accuracy, coverage, scale, stars,
+  downloads, users, benchmark results, or business metrics
+- uncertainty: private repo limits, unclear authorship, unsupported metrics,
+  generated code, or claims that may not be public
+
+Do not infer personal ownership from repository existence alone. If ownership is
+unclear, create the event as `draft` or `needs_review` and ask the user to
+confirm their role.
+
+Suggested event `details` keys for project material:
+
+```yaml
+details:
+  context: <problem, audience, or goal>
+  contribution: <user-owned work>
+  implementation: <technical approach, modules, tools>
+  outcome: <artifact, result, metric, or unknown>
+  evidence: <repo, PR, commit, doc, report, or user confirmation>
+  open_questions: <ownership, metrics, public visibility, etc.>
+```
+
 ## Draft Import Format
 
 For multi-event extraction, write a JSON file with an `events` array. See
@@ -107,6 +179,12 @@ Minimum event object:
     "precision": "month"
   },
   "description": "Built a local-first career timeline workflow.",
+  "details": {
+    "context": "Agents needed reusable professional memory across sessions.",
+    "contribution": "Designed the vault workflow and CLI import path.",
+    "implementation": "Used standard-library Python with JSON draft imports.",
+    "outcome": "Produced agent-readable identity exports."
+  },
   "claims": ["Designed a local-first career timeline workflow."],
   "sources": ["sources/src_project_note.md"]
 }

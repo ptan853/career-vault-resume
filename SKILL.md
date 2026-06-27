@@ -48,6 +48,26 @@ career memory versioned there.
 8. For resume-related work, stop after timeline readiness/handoff; do not draft
    the final resume here.
 
+## Event Detail Standard
+
+A useful event must preserve enough material for later tailoring. Extract more
+than a title and generic description when the source supports it. Aim to capture:
+
+- `context`: situation, problem, goal, audience, or why the work mattered.
+- `contribution`: what the user personally did, owned, led, or supported.
+- `implementation`: methods, technologies, architecture, data, tools, or tradeoffs.
+- `outcome`: shipped artifact, metric, business result, research result, release,
+  benchmark, report, or other evidence-backed result.
+- `evidence`: source file, URL, repo, commit, PR, certificate, report, or user
+  confirmation supporting the event.
+- `claims`: concise reusable facts that can later become resume bullets,
+  interview stories, or portfolio copy.
+
+If an event has only title/type/time/source, keep it `draft`. Mark it
+`needs_review` when ownership, metrics, dates, visibility, or public claims are
+unclear. Use `confirmed` only after user confirmation. Do not fabricate missing
+context or outcomes to make an event look stronger.
+
 ## Event Review Cards
 
 For routine extraction, review in chat instead of generating Markdown files.
