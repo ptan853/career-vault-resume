@@ -75,7 +75,7 @@ Install for Codex:
 
 ```bash
 mkdir -p ~/.codex/skills
-ln -s /Users/pt623/Documents/career-timeline \
+ln -s $HOME/path/to/career-timeline \
   ~/.codex/skills/career-timeline
 ```
 
@@ -83,7 +83,7 @@ Install for Claude Code:
 
 ```bash
 mkdir -p ~/.claude/skills
-ln -s /Users/pt623/Documents/career-timeline \
+ln -s $HOME/path/to/career-timeline \
   ~/.claude/skills/career-timeline
 ```
 
@@ -91,7 +91,7 @@ If your agent reads the cross-runtime skills folder, you can also link it there:
 
 ```bash
 mkdir -p ~/.agents/skills
-ln -s /Users/pt623/Documents/career-timeline \
+ln -s $HOME/path/to/career-timeline \
   ~/.agents/skills/career-timeline
 ```
 
@@ -103,7 +103,7 @@ If the skill is installed with a symlink as shown above, updating the local
 repository updates Codex and Claude Code at the same time:
 
 ```bash
-cd /Users/pt623/Documents/career-timeline
+cd $HOME/path/to/career-timeline
 git pull --ff-only origin main
 ```
 
