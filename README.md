@@ -97,6 +97,25 @@ ln -s /Users/pt623/Documents/career-timeline \
 
 The CLI uses only the Python standard library and requires Python 3.10+.
 
+## Update
+
+If the skill is installed with a symlink as shown above, updating the local
+repository updates Codex and Claude Code at the same time:
+
+```bash
+cd /Users/pt623/Documents/career-timeline
+git pull --ff-only origin main
+```
+
+Open a new agent session after updating so the runtime reloads `SKILL.md`.
+
+## How To Use With An Agent
+
+Ask naturally. For example: `use career-timeline to import this old resume`,
+`what do you know about my background?`, or `save this GitHub project as a
+career event`. The agent should preserve the source, extract draft events, show
+review cards, wait for confirmation, then update `~/.career-vault`.
+
 ## Quick Start
 
 Initialize a vault:
