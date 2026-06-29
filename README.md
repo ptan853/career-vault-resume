@@ -68,17 +68,34 @@ and asking the user what should be confirmed.
 
 ## Install
 
-Clone or keep this repository locally, then install it as a Codex-discoverable
-skill:
+Clone or keep this repository locally, then link the same folder into each
+agent runtime that should discover the skill.
+
+Install for Codex:
 
 ```bash
+mkdir -p ~/.codex/skills
 ln -s /Users/pt623/Documents/career-timeline \
-  /Users/pt623/.codex/skills/career-timeline
+  ~/.codex/skills/career-timeline
 ```
 
-The same `SKILL.md` can also be read by Claude Code, Gemini CLI, OpenCode, or
-other local agents that can access files and run shell commands. The CLI uses
-only the Python standard library and requires Python 3.10+.
+Install for Claude Code:
+
+```bash
+mkdir -p ~/.claude/skills
+ln -s /Users/pt623/Documents/career-timeline \
+  ~/.claude/skills/career-timeline
+```
+
+If your agent reads the cross-runtime skills folder, you can also link it there:
+
+```bash
+mkdir -p ~/.agents/skills
+ln -s /Users/pt623/Documents/career-timeline \
+  ~/.agents/skills/career-timeline
+```
+
+The CLI uses only the Python standard library and requires Python 3.10+.
 
 ## Quick Start
 
